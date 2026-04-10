@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore, useGraphStore } from '@/store';
 import { Navbar } from '@/components/layout/navbar';
 import { KnowledgeGraph } from '@/components/graph/knowledge-graph';
-import { NodeDetailPanel } from '@/components/graph/node-detail-panel';
+import { NodeWorkspace } from '@/components/graph/node-workspace';
 import { AddNodeModal } from '@/components/modals/add-node-modal';
 import { LinkNodeModal } from '@/components/modals/link-node-modal';
 import { MasteryTestModal } from '@/components/modals/mastery-test-modal';
@@ -20,6 +20,7 @@ export default function GraphPage() {
     setSelectedNodeId,
     setNodes,
     setEdges,
+    setPrerequisites,
     setSubjects,
     setUserProgress,
     nodes,
@@ -46,30 +47,33 @@ export default function GraphPage() {
   // Fetch all data on mount
   const fetchData = useCallback(async () => {
     try {
-      const [nodesRes, edgesRes, subjectsRes, progressRes] = await Promise.all([
+      const [nodesRes, edgesRes, subjectsRes, progressRes, prereqRes] = await Promise.all([
         fetch('/api/nodes'),
         fetch('/api/edges'),
         fetch('/api/subjects'),
         fetch('/api/progress'),
+        fetch('/api/prerequisites'),
       ]);
 
-      const [nodesData, edgesData, subjectsData, progressData] = await Promise.all([
+      const [nodesData, edgesData, subjectsData, progressData, prereqData] = await Promise.all([
         nodesRes.json(),
         edgesRes.json(),
         subjectsRes.json(),
-        progressRes.json(),
+        progressRes.ok ? progressRes.json() : { progress: {} },
+        prereqRes.ok ? prereqRes.json() : { prerequisites: [] },
       ]);
 
-      if (nodesRes.ok) setNodes(nodesData);
-      if (edgesRes.ok) setEdges(edgesData);
-      if (subjectsRes.ok) setSubjects(subjectsData);
-      if (progressRes.ok) setUserProgress(progressData);
+      if (nodesRes.ok) setNodes(nodesData.nodes || []);
+      if (edgesRes.ok) setEdges(edgesData.edges || []);
+      if (subjectsRes.ok) setSubjects(subjectsData.subjects || []);
+      setPrerequisites(prereqData.prerequisites || []);
+      setUserProgress(progressData.progress || {});
     } catch (error) {
       console.error('Failed to fetch graph data:', error);
     } finally {
       setDataLoading(false);
     }
-  }, [setNodes, setEdges, setSubjects, setUserProgress]);
+  }, [setNodes, setEdges, setPrerequisites, setSubjects, setUserProgress]);
 
   useEffect(() => {
     if (user) {
@@ -118,6 +122,11 @@ export default function GraphPage() {
     fetchData();
   }, [fetchData]);
 
+  // Navigate to a different node (from workspace links)
+  const handleNavigateToNode = useCallback((nodeId: string) => {
+    setSelectedNodeId(nodeId);
+  }, [setSelectedNodeId]);
+
   if (authLoading || (!user && !authLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -148,7 +157,7 @@ export default function GraphPage() {
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Navbar />
 
-      <div className="flex-1 flex relative">
+      <div className="flex-1 flex relative overflow-hidden">
         {/* Main graph area */}
         <div className="flex-1">
           <KnowledgeGraph
@@ -158,15 +167,16 @@ export default function GraphPage() {
           />
         </div>
 
-        {/* Node detail panel */}
+        {/* Full-page Node Workspace (slides over graph) */}
         {selectedNode && (
-          <NodeDetailPanel
+          <NodeWorkspace
             nodeId={selectedNode.id}
             onClose={() => setSelectedNodeId(null)}
             onStartTest={handleTakeTest}
             onAddConnectedNode={handleAddNode}
             onLinkExistingNode={handleLinkNode}
             onEditNode={handleEditNode}
+            onNavigateToNode={handleNavigateToNode}
           />
         )}
       </div>

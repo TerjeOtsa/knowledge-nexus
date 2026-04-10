@@ -22,7 +22,7 @@ export const createNodeSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   why_it_matters: z.string().optional().nullable(),
   use_cases: z.array(z.string()).optional().default([]),
-  difficulty: z.number().min(1).max(5).optional().default(1),
+  difficulty: z.number().min(1).max(10).optional().default(1),
   position_x: z.number().optional().default(0),
   position_y: z.number().optional().default(0),
 });

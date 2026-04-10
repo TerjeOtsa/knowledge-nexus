@@ -2,11 +2,20 @@
   "name": "knowledge-nexus",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run typecheck",
+    "generate:math-pack": "node scripts/generate-mathematics-expansion-pack.mjs",
+    "import:pack": "node scripts/import-content-pack.mjs",
+    "import:pack:dry": "node scripts/import-content-pack.mjs --dry-run",
+    "audit:tests": "node scripts/audit-test-coverage.mjs"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",

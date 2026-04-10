@@ -118,6 +118,26 @@ export interface MasteryAttempt {
   submitted_at: string;
 }
 
+// ---- Notes Types ----
+
+export interface UserNodeNote {
+  id: string;
+  user_id: string;
+  node_id: string;
+  content: string;
+  updated_at: string;
+  created_at: string;
+}
+
+export interface MasterNoteEntry {
+  node_id: string;
+  node_title: string;
+  subject_name?: string;
+  subject_color?: string;
+  content: string;
+  updated_at: string;
+}
+
 // ---- Graph Types for React Flow ----
 
 export interface GraphNode {

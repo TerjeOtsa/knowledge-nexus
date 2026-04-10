@@ -66,7 +66,19 @@ export function getRelationshipLabel(type: string): string {
  * Get difficulty label
  */
 export function getDifficultyLabel(level: number): string {
-  const labels = ['', 'Beginner', 'Elementary', 'Intermediate', 'Advanced', 'Expert'];
+  const labels = [
+    '',
+    'Beginner',        // 1
+    'Elementary',      // 2
+    'Foundational',    // 3
+    'Developing',      // 4
+    'Intermediate',    // 5
+    'Proficient',      // 6
+    'Advanced',        // 7
+    'Expert',          // 8
+    'Master',          // 9
+    'Visionary',       // 10
+  ];
   return labels[level] || 'Unknown';
 }
 

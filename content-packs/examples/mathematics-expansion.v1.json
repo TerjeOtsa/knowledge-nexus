@@ -1,0 +1,5000 @@
+{
+  "$schema": "../schema/content-pack.v1.schema.json",
+  "format": "knowledge-nexus/content-pack",
+  "version": 1,
+  "metadata": {
+    "id": "mathematics-expansion",
+    "title": "Mathematics Expansion and Test Coverage",
+    "description": "Expands the mathematics branch with additional foundational nodes and upgrades every mathematics node to a 10-question mastery test.",
+    "author": "Knowledge Nexus",
+    "updated_at": "2026-04-10"
+  },
+  "subjects": [],
+  "nodes": [
+    {
+      "key": "number-line-integers",
+      "title": "Number Line and Integers",
+      "slug": "number-line-integers",
+      "subject": "Mathematics",
+      "topic": "Number Theory",
+      "description": "The number line organizes positive numbers, negative numbers, and zero so learners can reason about order, distance, and direction.",
+      "why_it_matters": "It builds intuition for signed quantities, comparison, and the algebraic idea of moving values left and right through operations.",
+      "use_cases": [
+        "Comparing signed temperatures",
+        "Reading elevations above and below sea level",
+        "Interpreting gains and losses"
+      ],
+      "difficulty": 1,
+      "position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "key": "order-of-operations",
+      "title": "Order of Operations",
+      "slug": "order-of-operations",
+      "subject": "Mathematics",
+      "topic": "Arithmetic",
+      "description": "Order of operations gives a shared rule set for evaluating expressions with parentheses, exponents, multiplication, division, addition, and subtraction.",
+      "why_it_matters": "Without it, the same expression could produce different answers. It is a direct bridge from arithmetic into algebraic thinking.",
+      "use_cases": [
+        "Evaluating spreadsheet formulas",
+        "Reading code expressions",
+        "Checking calculator results"
+      ],
+      "difficulty": 1,
+      "position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "key": "decimals-percentages",
+      "title": "Decimals and Percentages",
+      "slug": "decimals-percentages",
+      "subject": "Mathematics",
+      "topic": "Number Theory",
+      "description": "Decimals and percentages express parts of a whole in forms commonly used for money, measurement, probability, and data summaries.",
+      "why_it_matters": "They connect arithmetic, fractions, ratios, and real-world interpretation in a way learners use every day.",
+      "use_cases": [
+        "Discounts and taxes",
+        "Measurement and scientific notation prep",
+        "Reading charts and reports"
+      ],
+      "difficulty": 1,
+      "position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "key": "coordinate-geometry",
+      "title": "Coordinate Geometry",
+      "slug": "coordinate-geometry",
+      "subject": "Mathematics",
+      "topic": "Geometry",
+      "description": "Coordinate geometry studies points, lines, and shapes using algebra on the coordinate plane.",
+      "why_it_matters": "It is where graphical intuition and symbolic manipulation meet, preparing learners for functions, vectors, and analytic modeling.",
+      "use_cases": [
+        "Graphing equations",
+        "Navigation and mapping",
+        "Computer graphics foundations"
+      ],
+      "difficulty": 2,
+      "position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "key": "polynomials",
+      "title": "Polynomials",
+      "slug": "polynomials",
+      "subject": "Mathematics",
+      "topic": "Algebra",
+      "description": "Polynomials combine powers of variables into expressions that can be simplified, graphed, factored, and used to model changing quantities.",
+      "why_it_matters": "They are central in algebra, functions, calculus preparation, and many scientific models.",
+      "use_cases": [
+        "Factoring expressions",
+        "Modeling curved data",
+        "Preparing for limits and derivatives"
+      ],
+      "difficulty": 2,
+      "position": {
+        "x": 0,
+        "y": 0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "slug:basic-arithmetic",
+      "target": "number-line-integers",
+      "relationship_type": "leads_to"
+    },
+    {
+      "source": "slug:basic-arithmetic",
+      "target": "order-of-operations",
+      "relationship_type": "leads_to"
+    },
+    {
+      "source": "slug:basic-arithmetic",
+      "target": "decimals-percentages",
+      "relationship_type": "leads_to"
+    },
+    {
+      "source": "slug:fractions-ratios",
+      "target": "decimals-percentages",
+      "relationship_type": "leads_to"
+    },
+    {
+      "source": "number-line-integers",
+      "target": "slug:algebra",
+      "relationship_type": "leads_to"
+    },
+    {
+      "source": "order-of-operations",
+      "target": "slug:algebra",
+      "relationship_type": "explains"
+    },
+    {
+      "source": "slug:basic-geometry",
+      "target": "coordinate-geometry",
+      "relationship_type": "leads_to"
+    },
+    {
+      "source": "slug:algebra",
+      "target": "coordinate-geometry",
+      "relationship_type": "used_in"
+    },
+    {
+      "source": "slug:algebra",
+      "target": "polynomials",
+      "relationship_type": "leads_to"
+    },
+    {
+      "source": "polynomials",
+      "target": "slug:functions",
+      "relationship_type": "explains"
+    },
+    {
+      "source": "coordinate-geometry",
+      "target": "slug:trigonometry",
+      "relationship_type": "used_in"
+    },
+    {
+      "source": "coordinate-geometry",
+      "target": "slug:vectors",
+      "relationship_type": "related_to"
+    }
+  ],
+  "prerequisites": [
+    {
+      "node": "number-line-integers",
+      "prerequisite": "slug:basic-arithmetic"
+    },
+    {
+      "node": "order-of-operations",
+      "prerequisite": "slug:basic-arithmetic"
+    },
+    {
+      "node": "decimals-percentages",
+      "prerequisite": "slug:basic-arithmetic"
+    },
+    {
+      "node": "decimals-percentages",
+      "prerequisite": "slug:fractions-ratios"
+    },
+    {
+      "node": "slug:algebra",
+      "prerequisite": "number-line-integers"
+    },
+    {
+      "node": "slug:algebra",
+      "prerequisite": "order-of-operations"
+    },
+    {
+      "node": "coordinate-geometry",
+      "prerequisite": "slug:basic-geometry"
+    },
+    {
+      "node": "coordinate-geometry",
+      "prerequisite": "slug:algebra"
+    },
+    {
+      "node": "polynomials",
+      "prerequisite": "slug:algebra"
+    }
+  ],
+  "tests": [
+    {
+      "node": "slug:basic-arithmetic",
+      "title": "Basic Arithmetic Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which arithmetic operation combines two quantities into a total?",
+          "options": [
+            {
+              "option_text": "Addition",
+              "is_correct": true
+            },
+            {
+              "option_text": "Subtraction",
+              "is_correct": false
+            },
+            {
+              "option_text": "Division",
+              "is_correct": false
+            },
+            {
+              "option_text": "Exponentiation",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which operation tells you how much remains after removing one amount from another?",
+          "options": [
+            {
+              "option_text": "Subtraction",
+              "is_correct": true
+            },
+            {
+              "option_text": "Multiplication",
+              "is_correct": false
+            },
+            {
+              "option_text": "Addition",
+              "is_correct": false
+            },
+            {
+              "option_text": "Rounding",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is multiplication best described as in basic arithmetic?",
+          "options": [
+            {
+              "option_text": "Repeated addition of equal groups",
+              "is_correct": true
+            },
+            {
+              "option_text": "Repeated subtraction of equal groups",
+              "is_correct": false
+            },
+            {
+              "option_text": "Finding a remainder",
+              "is_correct": false
+            },
+            {
+              "option_text": "Comparing percentages",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is 24 divided by 6?",
+          "options": [
+            {
+              "option_text": "4",
+              "is_correct": true
+            },
+            {
+              "option_text": "3",
+              "is_correct": false
+            },
+            {
+              "option_text": "5",
+              "is_correct": false
+            },
+            {
+              "option_text": "6",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which operation is the inverse of addition?",
+          "options": [
+            {
+              "option_text": "Subtraction",
+              "is_correct": true
+            },
+            {
+              "option_text": "Multiplication",
+              "is_correct": false
+            },
+            {
+              "option_text": "Division",
+              "is_correct": false
+            },
+            {
+              "option_text": "Estimation",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is 7 + 8?",
+          "options": [
+            {
+              "option_text": "15",
+              "is_correct": true
+            },
+            {
+              "option_text": "14",
+              "is_correct": false
+            },
+            {
+              "option_text": "16",
+              "is_correct": false
+            },
+            {
+              "option_text": "17",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "If you have 3 groups of 5 objects, how many objects do you have in total?",
+          "options": [
+            {
+              "option_text": "15",
+              "is_correct": true
+            },
+            {
+              "option_text": "8",
+              "is_correct": false
+            },
+            {
+              "option_text": "10",
+              "is_correct": false
+            },
+            {
+              "option_text": "20",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the name for the answer to a division problem?",
+          "options": [
+            {
+              "option_text": "Quotient",
+              "is_correct": true
+            },
+            {
+              "option_text": "Product",
+              "is_correct": false
+            },
+            {
+              "option_text": "Difference",
+              "is_correct": false
+            },
+            {
+              "option_text": "Factor",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which everyday task depends directly on basic arithmetic?",
+          "options": [
+            {
+              "option_text": "Budgeting household expenses",
+              "is_correct": true
+            },
+            {
+              "option_text": "Naming geometric proofs",
+              "is_correct": false
+            },
+            {
+              "option_text": "Balancing chemical equations",
+              "is_correct": false
+            },
+            {
+              "option_text": "Identifying cell organelles",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why is basic arithmetic foundational in the graph?",
+          "options": [
+            {
+              "option_text": "It supports nearly every later math topic",
+              "is_correct": true
+            },
+            {
+              "option_text": "It only matters for geometry",
+              "is_correct": false
+            },
+            {
+              "option_text": "It replaces algebra entirely",
+              "is_correct": false
+            },
+            {
+              "option_text": "It is mainly a statistics topic",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "slug:fractions-ratios",
+      "title": "Fractions Ratios Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "In the fraction 3/4, what is the number 3 called?",
+          "options": [
+            {
+              "option_text": "Numerator",
+              "is_correct": true
+            },
+            {
+              "option_text": "Denominator",
+              "is_correct": false
+            },
+            {
+              "option_text": "Quotient",
+              "is_correct": false
+            },
+            {
+              "option_text": "Coefficient",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "In the fraction 3/4, what is the number 4 called?",
+          "options": [
+            {
+              "option_text": "Denominator",
+              "is_correct": true
+            },
+            {
+              "option_text": "Numerator",
+              "is_correct": false
+            },
+            {
+              "option_text": "Dividend",
+              "is_correct": false
+            },
+            {
+              "option_text": "Base",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is 1/2 + 1/4?",
+          "options": [
+            {
+              "option_text": "3/4",
+              "is_correct": true
+            },
+            {
+              "option_text": "2/6",
+              "is_correct": false
+            },
+            {
+              "option_text": "1/6",
+              "is_correct": false
+            },
+            {
+              "option_text": "4/8",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which fraction is equivalent to 2/3?",
+          "options": [
+            {
+              "option_text": "4/6",
+              "is_correct": true
+            },
+            {
+              "option_text": "3/5",
+              "is_correct": false
+            },
+            {
+              "option_text": "5/8",
+              "is_correct": false
+            },
+            {
+              "option_text": "6/10",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the simplified form of the ratio 6:3?",
+          "options": [
+            {
+              "option_text": "2:1",
+              "is_correct": true
+            },
+            {
+              "option_text": "3:2",
+              "is_correct": false
+            },
+            {
+              "option_text": "6:1",
+              "is_correct": false
+            },
+            {
+              "option_text": "1:2",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which idea does a fraction represent?",
+          "options": [
+            {
+              "option_text": "A part of a whole",
+              "is_correct": true
+            },
+            {
+              "option_text": "A point on a graph only",
+              "is_correct": false
+            },
+            {
+              "option_text": "A negative integer only",
+              "is_correct": false
+            },
+            {
+              "option_text": "A proof method",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which fraction is equal to 25 percent?",
+          "options": [
+            {
+              "option_text": "1/4",
+              "is_correct": true
+            },
+            {
+              "option_text": "1/3",
+              "is_correct": false
+            },
+            {
+              "option_text": "2/5",
+              "is_correct": false
+            },
+            {
+              "option_text": "3/8",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why are ratios useful in real life?",
+          "options": [
+            {
+              "option_text": "They compare quantities like ingredients or scale",
+              "is_correct": true
+            },
+            {
+              "option_text": "They only describe angles",
+              "is_correct": false
+            },
+            {
+              "option_text": "They remove the need for division",
+              "is_correct": false
+            },
+            {
+              "option_text": "They only apply to calculus",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is a good first step when comparing 2/5 and 3/10?",
+          "options": [
+            {
+              "option_text": "Rewrite them with a common denominator",
+              "is_correct": true
+            },
+            {
+              "option_text": "Multiply both by zero",
+              "is_correct": false
+            },
+            {
+              "option_text": "Change them into exponents",
+              "is_correct": false
+            },
+            {
+              "option_text": "Turn them into matrices",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does a unit rate compare?",
+          "options": [
+            {
+              "option_text": "An amount per 1 unit of another quantity",
+              "is_correct": true
+            },
+            {
+              "option_text": "Two unrelated variables",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only negative numbers",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only geometric shapes",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "slug:basic-geometry",
+      "title": "Basic Geometry Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is an angle greater than 90 degrees but less than 180 degrees called?",
+          "options": [
+            {
+              "option_text": "Obtuse",
+              "is_correct": true
+            },
+            {
+              "option_text": "Acute",
+              "is_correct": false
+            },
+            {
+              "option_text": "Right",
+              "is_correct": false
+            },
+            {
+              "option_text": "Straight",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "How do you find the area of a rectangle?",
+          "options": [
+            {
+              "option_text": "Length multiplied by width",
+              "is_correct": true
+            },
+            {
+              "option_text": "Add all side lengths",
+              "is_correct": false
+            },
+            {
+              "option_text": "Base plus height",
+              "is_correct": false
+            },
+            {
+              "option_text": "Radius squared",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "How do you find the perimeter of a triangle?",
+          "options": [
+            {
+              "option_text": "Add the lengths of all three sides",
+              "is_correct": true
+            },
+            {
+              "option_text": "Multiply base by height",
+              "is_correct": false
+            },
+            {
+              "option_text": "Square the longest side",
+              "is_correct": false
+            },
+            {
+              "option_text": "Subtract one side from another",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "How many degrees are around a full point?",
+          "options": [
+            {
+              "option_text": "360",
+              "is_correct": true
+            },
+            {
+              "option_text": "90",
+              "is_correct": false
+            },
+            {
+              "option_text": "180",
+              "is_correct": false
+            },
+            {
+              "option_text": "270",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the boundary of a circle called?",
+          "options": [
+            {
+              "option_text": "Circumference",
+              "is_correct": true
+            },
+            {
+              "option_text": "Diameter",
+              "is_correct": false
+            },
+            {
+              "option_text": "Radius",
+              "is_correct": false
+            },
+            {
+              "option_text": "Chord",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which formula gives the volume of a rectangular prism?",
+          "options": [
+            {
+              "option_text": "Length × width × height",
+              "is_correct": true
+            },
+            {
+              "option_text": "Length + width + height",
+              "is_correct": false
+            },
+            {
+              "option_text": "Base × height only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Pi × radius squared",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is true about parallel lines in Euclidean geometry?",
+          "options": [
+            {
+              "option_text": "They never intersect",
+              "is_correct": true
+            },
+            {
+              "option_text": "They always meet at right angles",
+              "is_correct": false
+            },
+            {
+              "option_text": "They are always curved",
+              "is_correct": false
+            },
+            {
+              "option_text": "They have opposite lengths",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "How many degrees are in a right angle?",
+          "options": [
+            {
+              "option_text": "90",
+              "is_correct": true
+            },
+            {
+              "option_text": "45",
+              "is_correct": false
+            },
+            {
+              "option_text": "120",
+              "is_correct": false
+            },
+            {
+              "option_text": "180",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the sum of the interior angles of a triangle?",
+          "options": [
+            {
+              "option_text": "180 degrees",
+              "is_correct": true
+            },
+            {
+              "option_text": "90 degrees",
+              "is_correct": false
+            },
+            {
+              "option_text": "270 degrees",
+              "is_correct": false
+            },
+            {
+              "option_text": "360 degrees",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which field depends heavily on basic geometry?",
+          "options": [
+            {
+              "option_text": "Architecture and design",
+              "is_correct": true
+            },
+            {
+              "option_text": "Password hashing",
+              "is_correct": false
+            },
+            {
+              "option_text": "Grammar editing",
+              "is_correct": false
+            },
+            {
+              "option_text": "Audio playback only",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "slug:algebra",
+      "title": "Algebra Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does a variable usually represent in algebra?",
+          "options": [
+            {
+              "option_text": "An unknown or changeable quantity",
+              "is_correct": true
+            },
+            {
+              "option_text": "A fixed geometric angle",
+              "is_correct": false
+            },
+            {
+              "option_text": "A physical measurement unit",
+              "is_correct": false
+            },
+            {
+              "option_text": "A programming comment",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Solve x + 5 = 12.",
+          "options": [
+            {
+              "option_text": "x = 7",
+              "is_correct": true
+            },
+            {
+              "option_text": "x = 5",
+              "is_correct": false
+            },
+            {
+              "option_text": "x = 12",
+              "is_correct": false
+            },
+            {
+              "option_text": "x = 17",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does the graph of a linear equation form?",
+          "options": [
+            {
+              "option_text": "A straight line",
+              "is_correct": true
+            },
+            {
+              "option_text": "A circle",
+              "is_correct": false
+            },
+            {
+              "option_text": "A parabola only",
+              "is_correct": false
+            },
+            {
+              "option_text": "A random scatter",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which expression is an equation?",
+          "options": [
+            {
+              "option_text": "2x + 3 = 9",
+              "is_correct": true
+            },
+            {
+              "option_text": "2x + 3",
+              "is_correct": false
+            },
+            {
+              "option_text": "x^2 + 1",
+              "is_correct": false
+            },
+            {
+              "option_text": "5y",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Simplify 3x + 2x.",
+          "options": [
+            {
+              "option_text": "5x",
+              "is_correct": true
+            },
+            {
+              "option_text": "6x",
+              "is_correct": false
+            },
+            {
+              "option_text": "x^5",
+              "is_correct": false
+            },
+            {
+              "option_text": "3x^2",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Apply the distributive property: 2(x + 3).",
+          "options": [
+            {
+              "option_text": "2x + 6",
+              "is_correct": true
+            },
+            {
+              "option_text": "2x + 3",
+              "is_correct": false
+            },
+            {
+              "option_text": "x + 6",
+              "is_correct": false
+            },
+            {
+              "option_text": "6x",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the goal when solving an equation?",
+          "options": [
+            {
+              "option_text": "Isolate the unknown quantity",
+              "is_correct": true
+            },
+            {
+              "option_text": "Eliminate all numbers",
+              "is_correct": false
+            },
+            {
+              "option_text": "Turn it into a graph immediately",
+              "is_correct": false
+            },
+            {
+              "option_text": "Replace variables with shapes",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "In the term 4y, what is 4?",
+          "options": [
+            {
+              "option_text": "Coefficient",
+              "is_correct": true
+            },
+            {
+              "option_text": "Exponent",
+              "is_correct": false
+            },
+            {
+              "option_text": "Variable",
+              "is_correct": false
+            },
+            {
+              "option_text": "Constant term",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What degree does a quadratic expression have?",
+          "options": [
+            {
+              "option_text": "2",
+              "is_correct": true
+            },
+            {
+              "option_text": "1",
+              "is_correct": false
+            },
+            {
+              "option_text": "3",
+              "is_correct": false
+            },
+            {
+              "option_text": "0",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why does algebra matter beyond arithmetic?",
+          "options": [
+            {
+              "option_text": "It helps model patterns and unknowns in many fields",
+              "is_correct": true
+            },
+            {
+              "option_text": "It only renames fractions",
+              "is_correct": false
+            },
+            {
+              "option_text": "It is used only in geometry proofs",
+              "is_correct": false
+            },
+            {
+              "option_text": "It replaces all later math topics",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "slug:functions",
+      "title": "Functions Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is a function in mathematics?",
+          "options": [
+            {
+              "option_text": "A rule assigning exactly one output to each input",
+              "is_correct": true
+            },
+            {
+              "option_text": "A graph with multiple outputs for one input",
+              "is_correct": false
+            },
+            {
+              "option_text": "Any unordered list of numbers",
+              "is_correct": false
+            },
+            {
+              "option_text": "A shape with equal sides",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the domain of a function?",
+          "options": [
+            {
+              "option_text": "The set of allowable inputs",
+              "is_correct": true
+            },
+            {
+              "option_text": "The set of outputs only",
+              "is_correct": false
+            },
+            {
+              "option_text": "The slope of the graph",
+              "is_correct": false
+            },
+            {
+              "option_text": "The inverse operation",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the range of a function?",
+          "options": [
+            {
+              "option_text": "The set of outputs produced",
+              "is_correct": true
+            },
+            {
+              "option_text": "The graph origin",
+              "is_correct": false
+            },
+            {
+              "option_text": "The equation coefficient",
+              "is_correct": false
+            },
+            {
+              "option_text": "The input restriction only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which relation is a function?",
+          "options": [
+            {
+              "option_text": "y = 2x + 1",
+              "is_correct": true
+            },
+            {
+              "option_text": "x = y^2",
+              "is_correct": false
+            },
+            {
+              "option_text": "A circle centered at the origin",
+              "is_correct": false
+            },
+            {
+              "option_text": "A vertical line",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which test is commonly used on a graph to check if it is a function?",
+          "options": [
+            {
+              "option_text": "Vertical line test",
+              "is_correct": true
+            },
+            {
+              "option_text": "Horizontal angle test",
+              "is_correct": false
+            },
+            {
+              "option_text": "Triangle test",
+              "is_correct": false
+            },
+            {
+              "option_text": "Slope-area test",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "If f(x) = 2x + 1, what is f(3)?",
+          "options": [
+            {
+              "option_text": "7",
+              "is_correct": true
+            },
+            {
+              "option_text": "5",
+              "is_correct": false
+            },
+            {
+              "option_text": "6",
+              "is_correct": false
+            },
+            {
+              "option_text": "8",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What idea is central to every function?",
+          "options": [
+            {
+              "option_text": "Outputs depend on inputs according to a rule",
+              "is_correct": true
+            },
+            {
+              "option_text": "All functions are curved",
+              "is_correct": false
+            },
+            {
+              "option_text": "Functions cannot be graphed",
+              "is_correct": false
+            },
+            {
+              "option_text": "Every function must be quadratic",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does the notation f(x) mean?",
+          "options": [
+            {
+              "option_text": "The output of function f at input x",
+              "is_correct": true
+            },
+            {
+              "option_text": "x multiplied by f always",
+              "is_correct": false
+            },
+            {
+              "option_text": "A fraction with denominator x",
+              "is_correct": false
+            },
+            {
+              "option_text": "The inverse of x",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is true of a linear function?",
+          "options": [
+            {
+              "option_text": "It has a constant rate of change",
+              "is_correct": true
+            },
+            {
+              "option_text": "It always curves upward",
+              "is_correct": false
+            },
+            {
+              "option_text": "It has no intercepts",
+              "is_correct": false
+            },
+            {
+              "option_text": "It cannot model data",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why are functions fundamental in this project?",
+          "options": [
+            {
+              "option_text": "They power mathematical models used in later topics",
+              "is_correct": true
+            },
+            {
+              "option_text": "They only belong to geometry",
+              "is_correct": false
+            },
+            {
+              "option_text": "They replace derivatives entirely",
+              "is_correct": false
+            },
+            {
+              "option_text": "They matter only for fractions",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "slug:trigonometry",
+      "title": "Trigonometry Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What kind of triangle is most directly associated with basic trigonometric ratios?",
+          "options": [
+            {
+              "option_text": "Right triangle",
+              "is_correct": true
+            },
+            {
+              "option_text": "Equilateral triangle",
+              "is_correct": false
+            },
+            {
+              "option_text": "Isosceles triangle only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Scalene triangle only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "In SOHCAHTOA, what does sine equal?",
+          "options": [
+            {
+              "option_text": "Opposite over hypotenuse",
+              "is_correct": true
+            },
+            {
+              "option_text": "Adjacent over hypotenuse",
+              "is_correct": false
+            },
+            {
+              "option_text": "Opposite over adjacent",
+              "is_correct": false
+            },
+            {
+              "option_text": "Hypotenuse over opposite",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is cos(0)?",
+          "options": [
+            {
+              "option_text": "1",
+              "is_correct": true
+            },
+            {
+              "option_text": "0",
+              "is_correct": false
+            },
+            {
+              "option_text": "-1",
+              "is_correct": false
+            },
+            {
+              "option_text": "Undefined",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does tangent of an angle equal in a right triangle?",
+          "options": [
+            {
+              "option_text": "Opposite over adjacent",
+              "is_correct": true
+            },
+            {
+              "option_text": "Adjacent over hypotenuse",
+              "is_correct": false
+            },
+            {
+              "option_text": "Hypotenuse over opposite",
+              "is_correct": false
+            },
+            {
+              "option_text": "Opposite plus adjacent",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "How many radians are equal to 180 degrees?",
+          "options": [
+            {
+              "option_text": "pi",
+              "is_correct": true
+            },
+            {
+              "option_text": "2pi",
+              "is_correct": false
+            },
+            {
+              "option_text": "pi/2",
+              "is_correct": false
+            },
+            {
+              "option_text": "3pi/2",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What point on the unit circle corresponds to 90 degrees?",
+          "options": [
+            {
+              "option_text": "(0, 1)",
+              "is_correct": true
+            },
+            {
+              "option_text": "(1, 0)",
+              "is_correct": false
+            },
+            {
+              "option_text": "(-1, 0)",
+              "is_correct": false
+            },
+            {
+              "option_text": "(0, -1)",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which real-world phenomenon is often modeled with trigonometric functions?",
+          "options": [
+            {
+              "option_text": "Waves and oscillations",
+              "is_correct": true
+            },
+            {
+              "option_text": "Sorting algorithms only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Matrix inversion only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Chemical bonding only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is an angle of elevation measured from?",
+          "options": [
+            {
+              "option_text": "A horizontal reference line upward",
+              "is_correct": true
+            },
+            {
+              "option_text": "A vertical line downward",
+              "is_correct": false
+            },
+            {
+              "option_text": "The center of a circle only",
+              "is_correct": false
+            },
+            {
+              "option_text": "The y-axis only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which identity is fundamental in trigonometry?",
+          "options": [
+            {
+              "option_text": "sin^2(x) + cos^2(x) = 1",
+              "is_correct": true
+            },
+            {
+              "option_text": "sin(x) + cos(x) = 1",
+              "is_correct": false
+            },
+            {
+              "option_text": "tan(x) = cos(x)/sin(x)",
+              "is_correct": false
+            },
+            {
+              "option_text": "sin(x) = x for every x",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why does trigonometry matter later in the graph?",
+          "options": [
+            {
+              "option_text": "It supports geometry, vectors, and calculus applications",
+              "is_correct": true
+            },
+            {
+              "option_text": "It replaces arithmetic",
+              "is_correct": false
+            },
+            {
+              "option_text": "It is only useful for counting",
+              "is_correct": false
+            },
+            {
+              "option_text": "It eliminates the need for functions",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "slug:vectors",
+      "title": "Vectors Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What distinguishes a vector from a scalar?",
+          "options": [
+            {
+              "option_text": "A vector has magnitude and direction",
+              "is_correct": true
+            },
+            {
+              "option_text": "A vector has magnitude only",
+              "is_correct": false
+            },
+            {
+              "option_text": "A vector is always negative",
+              "is_correct": false
+            },
+            {
+              "option_text": "A vector cannot be graphed",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "How are vectors often added geometrically?",
+          "options": [
+            {
+              "option_text": "Tip-to-tail",
+              "is_correct": true
+            },
+            {
+              "option_text": "By squaring each entry",
+              "is_correct": false
+            },
+            {
+              "option_text": "By averaging magnitudes only",
+              "is_correct": false
+            },
+            {
+              "option_text": "By reversing directions",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What type of quantity is the dot product of two vectors?",
+          "options": [
+            {
+              "option_text": "Scalar",
+              "is_correct": true
+            },
+            {
+              "option_text": "Vector",
+              "is_correct": false
+            },
+            {
+              "option_text": "Matrix",
+              "is_correct": false
+            },
+            {
+              "option_text": "Angle",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which of these is a vector quantity?",
+          "options": [
+            {
+              "option_text": "Velocity",
+              "is_correct": true
+            },
+            {
+              "option_text": "Temperature",
+              "is_correct": false
+            },
+            {
+              "option_text": "Mass",
+              "is_correct": false
+            },
+            {
+              "option_text": "Time",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What are the components of the vector (2, 5)?",
+          "options": [
+            {
+              "option_text": "2 in x and 5 in y",
+              "is_correct": true
+            },
+            {
+              "option_text": "5 in x and 2 in y",
+              "is_correct": false
+            },
+            {
+              "option_text": "A magnitude of 10 only",
+              "is_correct": false
+            },
+            {
+              "option_text": "A slope of 2/5 only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the magnitude of the vector (3, 4)?",
+          "options": [
+            {
+              "option_text": "5",
+              "is_correct": true
+            },
+            {
+              "option_text": "7",
+              "is_correct": false
+            },
+            {
+              "option_text": "12",
+              "is_correct": false
+            },
+            {
+              "option_text": "1",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What vector points in the exact opposite direction of v?",
+          "options": [
+            {
+              "option_text": "-v",
+              "is_correct": true
+            },
+            {
+              "option_text": "v^2",
+              "is_correct": false
+            },
+            {
+              "option_text": "1/v",
+              "is_correct": false
+            },
+            {
+              "option_text": "2v",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why are vectors important in science?",
+          "options": [
+            {
+              "option_text": "They model directed quantities like force and motion",
+              "is_correct": true
+            },
+            {
+              "option_text": "They only count objects",
+              "is_correct": false
+            },
+            {
+              "option_text": "They only describe percentages",
+              "is_correct": false
+            },
+            {
+              "option_text": "They replace matrices completely",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is a unit vector?",
+          "options": [
+            {
+              "option_text": "A vector with magnitude 1",
+              "is_correct": true
+            },
+            {
+              "option_text": "A vector with zero direction",
+              "is_correct": false
+            },
+            {
+              "option_text": "A vector with two components only",
+              "is_correct": false
+            },
+            {
+              "option_text": "A vector that cannot be scaled",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "In three dimensions, what does the cross product produce?",
+          "options": [
+            {
+              "option_text": "A vector perpendicular to both inputs",
+              "is_correct": true
+            },
+            {
+              "option_text": "A scalar average",
+              "is_correct": false
+            },
+            {
+              "option_text": "A line segment",
+              "is_correct": false
+            },
+            {
+              "option_text": "A determinant only",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "slug:limits",
+      "title": "Limits Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does a limit describe?",
+          "options": [
+            {
+              "option_text": "The value a function approaches near a point",
+              "is_correct": true
+            },
+            {
+              "option_text": "The exact slope at every point",
+              "is_correct": false
+            },
+            {
+              "option_text": "The total area under a curve",
+              "is_correct": false
+            },
+            {
+              "option_text": "A matrix dimension",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What notation is commonly used for a limit?",
+          "options": [
+            {
+              "option_text": "lim as x approaches a value",
+              "is_correct": true
+            },
+            {
+              "option_text": "sum with sigma only",
+              "is_correct": false
+            },
+            {
+              "option_text": "f(x) only",
+              "is_correct": false
+            },
+            {
+              "option_text": "integral from a to b only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "When is a function continuous at x = a?",
+          "options": [
+            {
+              "option_text": "When the limit exists and equals the function value there",
+              "is_correct": true
+            },
+            {
+              "option_text": "When the function is always increasing",
+              "is_correct": false
+            },
+            {
+              "option_text": "When the slope is zero",
+              "is_correct": false
+            },
+            {
+              "option_text": "When the graph crosses the x-axis",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the limit of 1/x as x goes to infinity?",
+          "options": [
+            {
+              "option_text": "0",
+              "is_correct": true
+            },
+            {
+              "option_text": "1",
+              "is_correct": false
+            },
+            {
+              "option_text": "Infinity",
+              "is_correct": false
+            },
+            {
+              "option_text": "Does not exist",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What are one-sided limits?",
+          "options": [
+            {
+              "option_text": "Limits taken from the left or right side separately",
+              "is_correct": true
+            },
+            {
+              "option_text": "Limits taken only at zero",
+              "is_correct": false
+            },
+            {
+              "option_text": "Limits of vector functions only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Integrals with one bound",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What kind of discontinuity creates a hole that can sometimes be filled?",
+          "options": [
+            {
+              "option_text": "Removable discontinuity",
+              "is_correct": true
+            },
+            {
+              "option_text": "Jump discontinuity",
+              "is_correct": false
+            },
+            {
+              "option_text": "Infinite oscillation only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Right-angle discontinuity",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why are limits important in calculus?",
+          "options": [
+            {
+              "option_text": "They define derivatives and integrals rigorously",
+              "is_correct": true
+            },
+            {
+              "option_text": "They replace algebraic simplification",
+              "is_correct": false
+            },
+            {
+              "option_text": "They are used only for statistics",
+              "is_correct": false
+            },
+            {
+              "option_text": "They remove the need for functions",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "If the left-hand and right-hand limits are different, what happens to the two-sided limit?",
+          "options": [
+            {
+              "option_text": "It does not exist",
+              "is_correct": true
+            },
+            {
+              "option_text": "It becomes zero",
+              "is_correct": false
+            },
+            {
+              "option_text": "It equals the function value automatically",
+              "is_correct": false
+            },
+            {
+              "option_text": "It becomes a derivative",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "When can direct substitution often be used to evaluate a limit?",
+          "options": [
+            {
+              "option_text": "When the function is continuous at the point",
+              "is_correct": true
+            },
+            {
+              "option_text": "When the denominator is always zero",
+              "is_correct": false
+            },
+            {
+              "option_text": "When the graph is vertical",
+              "is_correct": false
+            },
+            {
+              "option_text": "When the function is undefined everywhere",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the limit of x^2 as x approaches 2?",
+          "options": [
+            {
+              "option_text": "4",
+              "is_correct": true
+            },
+            {
+              "option_text": "2",
+              "is_correct": false
+            },
+            {
+              "option_text": "8",
+              "is_correct": false
+            },
+            {
+              "option_text": "0",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "slug:derivatives",
+      "title": "Derivatives Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does a derivative measure?",
+          "options": [
+            {
+              "option_text": "Instantaneous rate of change",
+              "is_correct": true
+            },
+            {
+              "option_text": "Total accumulated area",
+              "is_correct": false
+            },
+            {
+              "option_text": "Average of all outputs",
+              "is_correct": false
+            },
+            {
+              "option_text": "A fixed intercept",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the derivative of x^2?",
+          "options": [
+            {
+              "option_text": "2x",
+              "is_correct": true
+            },
+            {
+              "option_text": "x",
+              "is_correct": false
+            },
+            {
+              "option_text": "x^3",
+              "is_correct": false
+            },
+            {
+              "option_text": "2",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What geometric quantity does a derivative give on a graph?",
+          "options": [
+            {
+              "option_text": "Slope of the tangent line",
+              "is_correct": true
+            },
+            {
+              "option_text": "Area of the triangle",
+              "is_correct": false
+            },
+            {
+              "option_text": "Length of the domain",
+              "is_correct": false
+            },
+            {
+              "option_text": "Distance to the y-axis",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the derivative of a constant?",
+          "options": [
+            {
+              "option_text": "0",
+              "is_correct": true
+            },
+            {
+              "option_text": "1",
+              "is_correct": false
+            },
+            {
+              "option_text": "The constant itself",
+              "is_correct": false
+            },
+            {
+              "option_text": "Undefined",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does the power rule say for x^n?",
+          "options": [
+            {
+              "option_text": "Its derivative is n*x^(n-1)",
+              "is_correct": true
+            },
+            {
+              "option_text": "Its derivative is x^(n+1)",
+              "is_correct": false
+            },
+            {
+              "option_text": "Its derivative is n+x",
+              "is_correct": false
+            },
+            {
+              "option_text": "It has no derivative",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "If a derivative is positive on an interval, what is the function doing there?",
+          "options": [
+            {
+              "option_text": "Increasing",
+              "is_correct": true
+            },
+            {
+              "option_text": "Decreasing",
+              "is_correct": false
+            },
+            {
+              "option_text": "Always zero",
+              "is_correct": false
+            },
+            {
+              "option_text": "Undefined everywhere",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "In physics, what is the derivative of position with respect to time?",
+          "options": [
+            {
+              "option_text": "Velocity",
+              "is_correct": true
+            },
+            {
+              "option_text": "Acceleration only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Distance traveled only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Mass",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What often marks a critical point of a smooth function?",
+          "options": [
+            {
+              "option_text": "The derivative equals zero",
+              "is_correct": true
+            },
+            {
+              "option_text": "The function equals one",
+              "is_correct": false
+            },
+            {
+              "option_text": "The slope is always positive",
+              "is_correct": false
+            },
+            {
+              "option_text": "The domain is empty",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the derivative of 3x + 1?",
+          "options": [
+            {
+              "option_text": "3",
+              "is_correct": true
+            },
+            {
+              "option_text": "1",
+              "is_correct": false
+            },
+            {
+              "option_text": "3x",
+              "is_correct": false
+            },
+            {
+              "option_text": "4x",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why do derivatives matter in applications?",
+          "options": [
+            {
+              "option_text": "They let us model change, motion, and optimization",
+              "is_correct": true
+            },
+            {
+              "option_text": "They only rename integrals",
+              "is_correct": false
+            },
+            {
+              "option_text": "They are used only in geometry",
+              "is_correct": false
+            },
+            {
+              "option_text": "They remove the need for limits",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "slug:integration",
+      "title": "Integration Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is integration mainly associated with?",
+          "options": [
+            {
+              "option_text": "Accumulation and area",
+              "is_correct": true
+            },
+            {
+              "option_text": "Slope and tangent lines",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only discrete counting",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only matrix multiplication",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is an antiderivative of 2x?",
+          "options": [
+            {
+              "option_text": "x^2 + C",
+              "is_correct": true
+            },
+            {
+              "option_text": "2 + C",
+              "is_correct": false
+            },
+            {
+              "option_text": "2x^2 + C",
+              "is_correct": false
+            },
+            {
+              "option_text": "x + C",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What makes an integral definite?",
+          "options": [
+            {
+              "option_text": "It has bounds that specify an interval",
+              "is_correct": true
+            },
+            {
+              "option_text": "It always equals zero",
+              "is_correct": false
+            },
+            {
+              "option_text": "It never includes a variable",
+              "is_correct": false
+            },
+            {
+              "option_text": "It must be quadratic",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What theorem directly connects derivatives and integrals?",
+          "options": [
+            {
+              "option_text": "Fundamental Theorem of Calculus",
+              "is_correct": true
+            },
+            {
+              "option_text": "Pythagorean Theorem",
+              "is_correct": false
+            },
+            {
+              "option_text": "Binomial Theorem",
+              "is_correct": false
+            },
+            {
+              "option_text": "Mean Value Theorem only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why is +C included in an indefinite integral?",
+          "options": [
+            {
+              "option_text": "Antiderivatives can differ by a constant",
+              "is_correct": true
+            },
+            {
+              "option_text": "Every integral must be corrected",
+              "is_correct": false
+            },
+            {
+              "option_text": "It changes the derivative value",
+              "is_correct": false
+            },
+            {
+              "option_text": "It means the integral is wrong",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does a definite integral often represent on a graph?",
+          "options": [
+            {
+              "option_text": "Signed area under a curve over an interval",
+              "is_correct": true
+            },
+            {
+              "option_text": "Slope of the secant line",
+              "is_correct": false
+            },
+            {
+              "option_text": "Distance to the origin",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only positive area always",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the integral of 5 with respect to x?",
+          "options": [
+            {
+              "option_text": "5x + C",
+              "is_correct": true
+            },
+            {
+              "option_text": "5 + C",
+              "is_correct": false
+            },
+            {
+              "option_text": "x^5 + C",
+              "is_correct": false
+            },
+            {
+              "option_text": "25x + C",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "When is substitution especially useful in integration?",
+          "options": [
+            {
+              "option_text": "When a composition of functions appears",
+              "is_correct": true
+            },
+            {
+              "option_text": "When no variables appear",
+              "is_correct": false
+            },
+            {
+              "option_text": "When multiplying matrices",
+              "is_correct": false
+            },
+            {
+              "option_text": "When solving for slopes only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What can happen when part of a graph lies below the x-axis in a definite integral?",
+          "options": [
+            {
+              "option_text": "It contributes negative signed area",
+              "is_correct": true
+            },
+            {
+              "option_text": "It is ignored completely",
+              "is_correct": false
+            },
+            {
+              "option_text": "It becomes a derivative",
+              "is_correct": false
+            },
+            {
+              "option_text": "It forces the integral to be undefined",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which quantity can often be recovered by integrating velocity?",
+          "options": [
+            {
+              "option_text": "Displacement",
+              "is_correct": true
+            },
+            {
+              "option_text": "Acceleration",
+              "is_correct": false
+            },
+            {
+              "option_text": "Slope only",
+              "is_correct": false
+            },
+            {
+              "option_text": "A polynomial degree",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "slug:matrices",
+      "title": "Matrices Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is a matrix?",
+          "options": [
+            {
+              "option_text": "A rectangular array of numbers",
+              "is_correct": true
+            },
+            {
+              "option_text": "A single variable",
+              "is_correct": false
+            },
+            {
+              "option_text": "A geometric proof",
+              "is_correct": false
+            },
+            {
+              "option_text": "A ratio of two fractions",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What are the dimensions of a matrix described by 2 x 3?",
+          "options": [
+            {
+              "option_text": "2 rows and 3 columns",
+              "is_correct": true
+            },
+            {
+              "option_text": "2 columns and 3 rows",
+              "is_correct": false
+            },
+            {
+              "option_text": "5 rows and 1 column",
+              "is_correct": false
+            },
+            {
+              "option_text": "3 square entries only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What role does the identity matrix play?",
+          "options": [
+            {
+              "option_text": "It acts like the multiplicative identity",
+              "is_correct": true
+            },
+            {
+              "option_text": "It always has determinant zero",
+              "is_correct": false
+            },
+            {
+              "option_text": "It is used only for addition",
+              "is_correct": false
+            },
+            {
+              "option_text": "It swaps rows automatically",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "When is matrix multiplication AB defined?",
+          "options": [
+            {
+              "option_text": "When the columns of A equal the rows of B",
+              "is_correct": true
+            },
+            {
+              "option_text": "When both matrices have the same determinant",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only for square matrices",
+              "is_correct": false
+            },
+            {
+              "option_text": "When A and B have the same number of rows",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What kind of value is associated with a square matrix and helps indicate invertibility?",
+          "options": [
+            {
+              "option_text": "Determinant",
+              "is_correct": true
+            },
+            {
+              "option_text": "Derivative",
+              "is_correct": false
+            },
+            {
+              "option_text": "Median",
+              "is_correct": false
+            },
+            {
+              "option_text": "Gradient",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "When does a square matrix have an inverse?",
+          "options": [
+            {
+              "option_text": "When its determinant is nonzero",
+              "is_correct": true
+            },
+            {
+              "option_text": "When it has more rows than columns",
+              "is_correct": false
+            },
+            {
+              "option_text": "When all entries are the same",
+              "is_correct": false
+            },
+            {
+              "option_text": "When it is triangular only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "How are matrices commonly used with linear systems?",
+          "options": [
+            {
+              "option_text": "They organize coefficients and constants efficiently",
+              "is_correct": true
+            },
+            {
+              "option_text": "They replace variables entirely",
+              "is_correct": false
+            },
+            {
+              "option_text": "They turn equations into triangles",
+              "is_correct": false
+            },
+            {
+              "option_text": "They remove the need for algebra",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "How many entries are in a 2 x 3 matrix?",
+          "options": [
+            {
+              "option_text": "6",
+              "is_correct": true
+            },
+            {
+              "option_text": "5",
+              "is_correct": false
+            },
+            {
+              "option_text": "3",
+              "is_correct": false
+            },
+            {
+              "option_text": "9",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "When can two matrices be added?",
+          "options": [
+            {
+              "option_text": "When they have the same dimensions",
+              "is_correct": true
+            },
+            {
+              "option_text": "When both are invertible",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only when both are diagonal",
+              "is_correct": false
+            },
+            {
+              "option_text": "Whenever one has more rows",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which applied field relies heavily on matrices?",
+          "options": [
+            {
+              "option_text": "Computer graphics and transformations",
+              "is_correct": true
+            },
+            {
+              "option_text": "Sentence diagramming",
+              "is_correct": false
+            },
+            {
+              "option_text": "Organic chemistry naming only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Food recipes only",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "slug:advanced-linear-algebra",
+      "title": "Advanced Linear Algebra Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is an eigenvector?",
+          "options": [
+            {
+              "option_text": "A nonzero vector whose direction is unchanged by a transformation",
+              "is_correct": true
+            },
+            {
+              "option_text": "A vector with length one only",
+              "is_correct": false
+            },
+            {
+              "option_text": "A row of a matrix",
+              "is_correct": false
+            },
+            {
+              "option_text": "A scalar from a determinant",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is an eigenvalue?",
+          "options": [
+            {
+              "option_text": "The factor by which an eigenvector is scaled",
+              "is_correct": true
+            },
+            {
+              "option_text": "The sum of every matrix entry",
+              "is_correct": false
+            },
+            {
+              "option_text": "A vector perpendicular to all others",
+              "is_correct": false
+            },
+            {
+              "option_text": "The determinant of a basis",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is a basis of a vector space?",
+          "options": [
+            {
+              "option_text": "A linearly independent set that spans the space",
+              "is_correct": true
+            },
+            {
+              "option_text": "Any set with many vectors",
+              "is_correct": false
+            },
+            {
+              "option_text": "A set of dependent vectors only",
+              "is_correct": false
+            },
+            {
+              "option_text": "A square matrix with determinant zero",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does the dimension of a vector space count?",
+          "options": [
+            {
+              "option_text": "The number of vectors in any basis",
+              "is_correct": true
+            },
+            {
+              "option_text": "The number of rows in every matrix",
+              "is_correct": false
+            },
+            {
+              "option_text": "The determinant size",
+              "is_correct": false
+            },
+            {
+              "option_text": "The number of subjects in the graph",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why is diagonalization useful?",
+          "options": [
+            {
+              "option_text": "It simplifies repeated linear transformations",
+              "is_correct": true
+            },
+            {
+              "option_text": "It guarantees every matrix is invertible",
+              "is_correct": false
+            },
+            {
+              "option_text": "It removes eigenvalues",
+              "is_correct": false
+            },
+            {
+              "option_text": "It only applies to 2 x 2 matrices",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is true of orthogonal vectors?",
+          "options": [
+            {
+              "option_text": "Their dot product is zero",
+              "is_correct": true
+            },
+            {
+              "option_text": "Their magnitudes are always one",
+              "is_correct": false
+            },
+            {
+              "option_text": "They point in the same direction",
+              "is_correct": false
+            },
+            {
+              "option_text": "They cannot form a basis",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is a linear transformation?",
+          "options": [
+            {
+              "option_text": "A map that preserves vector addition and scalar multiplication",
+              "is_correct": true
+            },
+            {
+              "option_text": "Any nonlinear graph",
+              "is_correct": false
+            },
+            {
+              "option_text": "A matrix with equal rows",
+              "is_correct": false
+            },
+            {
+              "option_text": "A proof by contradiction",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the null space of a matrix?",
+          "options": [
+            {
+              "option_text": "The set of vectors mapped to zero",
+              "is_correct": true
+            },
+            {
+              "option_text": "All eigenvectors with eigenvalue one",
+              "is_correct": false
+            },
+            {
+              "option_text": "The determinant of the matrix",
+              "is_correct": false
+            },
+            {
+              "option_text": "The matrix inverse",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does the rank of a matrix measure?",
+          "options": [
+            {
+              "option_text": "The number of linearly independent rows or columns",
+              "is_correct": true
+            },
+            {
+              "option_text": "The largest entry in the matrix",
+              "is_correct": false
+            },
+            {
+              "option_text": "The trace times the determinant",
+              "is_correct": false
+            },
+            {
+              "option_text": "The number of zero entries",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why does advanced linear algebra matter beyond basic matrices?",
+          "options": [
+            {
+              "option_text": "It explains structure, transformations, and higher-dimensional systems",
+              "is_correct": true
+            },
+            {
+              "option_text": "It only renames vectors",
+              "is_correct": false
+            },
+            {
+              "option_text": "It removes the need for calculus",
+              "is_correct": false
+            },
+            {
+              "option_text": "It applies only to fractions",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "slug:differential-equations",
+      "title": "Differential Equations Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What makes an equation a differential equation?",
+          "options": [
+            {
+              "option_text": "It contains derivatives of an unknown function",
+              "is_correct": true
+            },
+            {
+              "option_text": "It contains only integers",
+              "is_correct": false
+            },
+            {
+              "option_text": "It uses fractions only",
+              "is_correct": false
+            },
+            {
+              "option_text": "It has no variables",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What kind of object is usually the solution to a differential equation?",
+          "options": [
+            {
+              "option_text": "A function",
+              "is_correct": true
+            },
+            {
+              "option_text": "A single angle",
+              "is_correct": false
+            },
+            {
+              "option_text": "A matrix dimension",
+              "is_correct": false
+            },
+            {
+              "option_text": "A subject color",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does first-order mean in a differential equation?",
+          "options": [
+            {
+              "option_text": "The highest derivative is the first derivative",
+              "is_correct": true
+            },
+            {
+              "option_text": "The equation has one variable only",
+              "is_correct": false
+            },
+            {
+              "option_text": "The solution is linear",
+              "is_correct": false
+            },
+            {
+              "option_text": "It is the easiest possible equation",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the purpose of an initial condition?",
+          "options": [
+            {
+              "option_text": "It selects a specific solution from a family of solutions",
+              "is_correct": true
+            },
+            {
+              "option_text": "It changes derivatives into integrals",
+              "is_correct": false
+            },
+            {
+              "option_text": "It removes variables",
+              "is_correct": false
+            },
+            {
+              "option_text": "It proves convergence automatically",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which pattern is commonly modeled by y' = ky?",
+          "options": [
+            {
+              "option_text": "Exponential growth or decay",
+              "is_correct": true
+            },
+            {
+              "option_text": "Circular area",
+              "is_correct": false
+            },
+            {
+              "option_text": "Polynomial factoring only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Static geometry",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "When is separation of variables a useful method?",
+          "options": [
+            {
+              "option_text": "When the equation can be rewritten with x and y parts separated",
+              "is_correct": true
+            },
+            {
+              "option_text": "When the equation has no derivatives",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only for second-order equations",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only for matrices",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which physical system is often described by a second-order differential equation?",
+          "options": [
+            {
+              "option_text": "Oscillations like springs",
+              "is_correct": true
+            },
+            {
+              "option_text": "Simple counting problems",
+              "is_correct": false
+            },
+            {
+              "option_text": "Static triangle labeling",
+              "is_correct": false
+            },
+            {
+              "option_text": "Percentage discounts",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does a slope field visualize?",
+          "options": [
+            {
+              "option_text": "The local direction of solution curves",
+              "is_correct": true
+            },
+            {
+              "option_text": "Only exact solutions",
+              "is_correct": false
+            },
+            {
+              "option_text": "Matrix inverses",
+              "is_correct": false
+            },
+            {
+              "option_text": "Areas under curves",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why are differential equations powerful in applications?",
+          "options": [
+            {
+              "option_text": "They model how systems change over time",
+              "is_correct": true
+            },
+            {
+              "option_text": "They only compare fractions",
+              "is_correct": false
+            },
+            {
+              "option_text": "They remove the need for functions",
+              "is_correct": false
+            },
+            {
+              "option_text": "They belong only to statistics",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which existing math topics feed directly into differential equations in this graph?",
+          "options": [
+            {
+              "option_text": "Derivatives and integration",
+              "is_correct": true
+            },
+            {
+              "option_text": "Only geometry and fractions",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only arithmetic and percentages",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only proofs and topology",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "slug:multivariable-calculus",
+      "title": "Multivariable Calculus Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does multivariable calculus study?",
+          "options": [
+            {
+              "option_text": "Functions of more than one variable",
+              "is_correct": true
+            },
+            {
+              "option_text": "Only one-variable polynomials",
+              "is_correct": false
+            },
+            {
+              "option_text": "Matrices with no variables",
+              "is_correct": false
+            },
+            {
+              "option_text": "Whole-number arithmetic only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does a partial derivative measure?",
+          "options": [
+            {
+              "option_text": "Rate of change with respect to one variable while others are fixed",
+              "is_correct": true
+            },
+            {
+              "option_text": "Area under a curve",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only total change in every direction",
+              "is_correct": false
+            },
+            {
+              "option_text": "The determinant of a matrix",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does the gradient vector point toward?",
+          "options": [
+            {
+              "option_text": "The direction of steepest increase",
+              "is_correct": true
+            },
+            {
+              "option_text": "The direction of smallest determinant",
+              "is_correct": false
+            },
+            {
+              "option_text": "The x-axis always",
+              "is_correct": false
+            },
+            {
+              "option_text": "The origin always",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does a double integral usually accumulate over?",
+          "options": [
+            {
+              "option_text": "A two-dimensional region",
+              "is_correct": true
+            },
+            {
+              "option_text": "A single point",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only a line segment",
+              "is_correct": false
+            },
+            {
+              "option_text": "A determinant table",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is a level curve?",
+          "options": [
+            {
+              "option_text": "A set of points where the function has the same value",
+              "is_correct": true
+            },
+            {
+              "option_text": "A tangent line with zero slope",
+              "is_correct": false
+            },
+            {
+              "option_text": "A polynomial with degree one",
+              "is_correct": false
+            },
+            {
+              "option_text": "A vector of length one",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does a directional derivative measure?",
+          "options": [
+            {
+              "option_text": "Rate of change in a chosen direction",
+              "is_correct": true
+            },
+            {
+              "option_text": "Only change along the y-axis",
+              "is_correct": false
+            },
+            {
+              "option_text": "Area under any surface",
+              "is_correct": false
+            },
+            {
+              "option_text": "The inverse of a matrix",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What method is used for optimization with a constraint?",
+          "options": [
+            {
+              "option_text": "Lagrange multipliers",
+              "is_correct": true
+            },
+            {
+              "option_text": "Long division",
+              "is_correct": false
+            },
+            {
+              "option_text": "Synthetic substitution",
+              "is_correct": false
+            },
+            {
+              "option_text": "Row reduction",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does a Jacobian help describe?",
+          "options": [
+            {
+              "option_text": "Local scaling and change of variables",
+              "is_correct": true
+            },
+            {
+              "option_text": "A right triangle identity",
+              "is_correct": false
+            },
+            {
+              "option_text": "A polynomial root",
+              "is_correct": false
+            },
+            {
+              "option_text": "A sequence limit only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which idea from single-variable calculus extends into multivariable calculus?",
+          "options": [
+            {
+              "option_text": "Differentiation and integration",
+              "is_correct": true
+            },
+            {
+              "option_text": "Only arithmetic facts",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only ratio simplification",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only Euclidean postulates",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why is multivariable calculus valuable in applications?",
+          "options": [
+            {
+              "option_text": "It supports optimization, fields, and multi-input models",
+              "is_correct": true
+            },
+            {
+              "option_text": "It only redraws line graphs",
+              "is_correct": false
+            },
+            {
+              "option_text": "It replaces linear algebra completely",
+              "is_correct": false
+            },
+            {
+              "option_text": "It is only for naming coordinates",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "slug:real-analysis",
+      "title": "Real Analysis Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is real analysis mainly concerned with?",
+          "options": [
+            {
+              "option_text": "The rigorous foundations of calculus on the real numbers",
+              "is_correct": true
+            },
+            {
+              "option_text": "Counting integer solutions only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Drawing geometric constructions only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Building matrices only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does an epsilon-delta definition formalize?",
+          "options": [
+            {
+              "option_text": "What it means for a limit to exist",
+              "is_correct": true
+            },
+            {
+              "option_text": "How to factor polynomials",
+              "is_correct": false
+            },
+            {
+              "option_text": "How to draw a vector",
+              "is_correct": false
+            },
+            {
+              "option_text": "How to compute a determinant",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does it mean for a sequence to converge?",
+          "options": [
+            {
+              "option_text": "Its terms get arbitrarily close to a limit",
+              "is_correct": true
+            },
+            {
+              "option_text": "Its terms become equal immediately",
+              "is_correct": false
+            },
+            {
+              "option_text": "Its graph becomes linear",
+              "is_correct": false
+            },
+            {
+              "option_text": "Its determinant becomes one",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is a Cauchy sequence?",
+          "options": [
+            {
+              "option_text": "A sequence whose terms become arbitrarily close to each other",
+              "is_correct": true
+            },
+            {
+              "option_text": "A sequence with constant difference always",
+              "is_correct": false
+            },
+            {
+              "option_text": "A sequence with only positive terms",
+              "is_correct": false
+            },
+            {
+              "option_text": "A sequence of matrices only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which property of the real numbers is central in analysis?",
+          "options": [
+            {
+              "option_text": "Completeness",
+              "is_correct": true
+            },
+            {
+              "option_text": "Commutativity only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Color symmetry",
+              "is_correct": false
+            },
+            {
+              "option_text": "Divisibility by two",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is uniform continuity stronger than?",
+          "options": [
+            {
+              "option_text": "Ordinary pointwise continuity",
+              "is_correct": true
+            },
+            {
+              "option_text": "Differentiability only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Integrability only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Polynomial degree",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which topic is a classic part of real analysis?",
+          "options": [
+            {
+              "option_text": "Convergence of sequences and series",
+              "is_correct": true
+            },
+            {
+              "option_text": "Basic arithmetic facts only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Triangle labeling only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Naming axes only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why is proof so central in real analysis?",
+          "options": [
+            {
+              "option_text": "The subject emphasizes precise justification over intuition alone",
+              "is_correct": true
+            },
+            {
+              "option_text": "Because no examples are allowed",
+              "is_correct": false
+            },
+            {
+              "option_text": "Because graphs are forbidden",
+              "is_correct": false
+            },
+            {
+              "option_text": "Because numbers are avoided",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the supremum of a set?",
+          "options": [
+            {
+              "option_text": "Its least upper bound",
+              "is_correct": true
+            },
+            {
+              "option_text": "Its smallest element",
+              "is_correct": false
+            },
+            {
+              "option_text": "Its derivative",
+              "is_correct": false
+            },
+            {
+              "option_text": "Its inverse",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why does real analysis matter later in mathematics?",
+          "options": [
+            {
+              "option_text": "It makes calculus-based reasoning rigorous and trustworthy",
+              "is_correct": true
+            },
+            {
+              "option_text": "It only simplifies percentages",
+              "is_correct": false
+            },
+            {
+              "option_text": "It replaces algebra completely",
+              "is_correct": false
+            },
+            {
+              "option_text": "It matters only for geometry coloring",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "slug:abstract-algebra",
+      "title": "Abstract Algebra Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does abstract algebra study?",
+          "options": [
+            {
+              "option_text": "Structures such as groups, rings, and fields",
+              "is_correct": true
+            },
+            {
+              "option_text": "Only numerical approximations",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only graphing lines",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only area formulas",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is a group?",
+          "options": [
+            {
+              "option_text": "A set with an operation satisfying specific axioms",
+              "is_correct": true
+            },
+            {
+              "option_text": "Any set of numbers",
+              "is_correct": false
+            },
+            {
+              "option_text": "A matrix with nonzero determinant",
+              "is_correct": false
+            },
+            {
+              "option_text": "A polynomial with two terms",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does an identity element do?",
+          "options": [
+            {
+              "option_text": "Leaves other elements unchanged under the operation",
+              "is_correct": true
+            },
+            {
+              "option_text": "Turns every element into zero",
+              "is_correct": false
+            },
+            {
+              "option_text": "Reverses order automatically",
+              "is_correct": false
+            },
+            {
+              "option_text": "Removes inverses",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does an inverse element do?",
+          "options": [
+            {
+              "option_text": "Undoes the operation relative to the identity",
+              "is_correct": true
+            },
+            {
+              "option_text": "Squares the element",
+              "is_correct": false
+            },
+            {
+              "option_text": "Makes the group commutative",
+              "is_correct": false
+            },
+            {
+              "option_text": "Creates a basis",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which set forms a group under addition?",
+          "options": [
+            {
+              "option_text": "The integers",
+              "is_correct": true
+            },
+            {
+              "option_text": "The positive integers under subtraction",
+              "is_correct": false
+            },
+            {
+              "option_text": "All matrices under multiplication",
+              "is_correct": false
+            },
+            {
+              "option_text": "Triangles under rotation only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does it mean for a group to be commutative?",
+          "options": [
+            {
+              "option_text": "Order does not affect the result of the operation",
+              "is_correct": true
+            },
+            {
+              "option_text": "Every element is its own inverse",
+              "is_correct": false
+            },
+            {
+              "option_text": "The group has exactly two elements",
+              "is_correct": false
+            },
+            {
+              "option_text": "The group has no identity",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What structure has two compatible operations, often addition and multiplication?",
+          "options": [
+            {
+              "option_text": "Ring",
+              "is_correct": true
+            },
+            {
+              "option_text": "Vector",
+              "is_correct": false
+            },
+            {
+              "option_text": "Limit",
+              "is_correct": false
+            },
+            {
+              "option_text": "Derivative",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What extra property makes a field stronger than a ring?",
+          "options": [
+            {
+              "option_text": "Nonzero elements can be divided",
+              "is_correct": true
+            },
+            {
+              "option_text": "It must be finite",
+              "is_correct": false
+            },
+            {
+              "option_text": "It has no additive identity",
+              "is_correct": false
+            },
+            {
+              "option_text": "It has only one operation",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is a homomorphism?",
+          "options": [
+            {
+              "option_text": "A structure-preserving map",
+              "is_correct": true
+            },
+            {
+              "option_text": "A geometric reflection only",
+              "is_correct": false
+            },
+            {
+              "option_text": "A list of coefficients",
+              "is_correct": false
+            },
+            {
+              "option_text": "A repeated derivative",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why is abstract algebra important outside pure math?",
+          "options": [
+            {
+              "option_text": "It underpins cryptography, symmetry, and coding theory",
+              "is_correct": true
+            },
+            {
+              "option_text": "It only renames arithmetic",
+              "is_correct": false
+            },
+            {
+              "option_text": "It removes the need for functions",
+              "is_correct": false
+            },
+            {
+              "option_text": "It applies only to circles",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "number-line-integers",
+      "title": "Number Line Integers Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does the number line help visualize?",
+          "options": [
+            {
+              "option_text": "The relative position and order of numbers",
+              "is_correct": true
+            },
+            {
+              "option_text": "Only triangle areas",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only matrix dimensions",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only polynomial roots",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which set is represented by integers?",
+          "options": [
+            {
+              "option_text": "Negative whole numbers, zero, and positive whole numbers",
+              "is_correct": true
+            },
+            {
+              "option_text": "Positive decimals only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Fractions only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Angles only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the absolute value of -7?",
+          "options": [
+            {
+              "option_text": "7",
+              "is_correct": true
+            },
+            {
+              "option_text": "-7",
+              "is_correct": false
+            },
+            {
+              "option_text": "0",
+              "is_correct": false
+            },
+            {
+              "option_text": "14",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which number is greater?",
+          "options": [
+            {
+              "option_text": "2 is greater than -3",
+              "is_correct": true
+            },
+            {
+              "option_text": "-3 is greater than 2",
+              "is_correct": false
+            },
+            {
+              "option_text": "-3 and 2 are equal",
+              "is_correct": false
+            },
+            {
+              "option_text": "Neither can be compared",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the opposite of -5?",
+          "options": [
+            {
+              "option_text": "5",
+              "is_correct": true
+            },
+            {
+              "option_text": "-10",
+              "is_correct": false
+            },
+            {
+              "option_text": "0",
+              "is_correct": false
+            },
+            {
+              "option_text": "1/5",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What happens on the number line as you move to the right?",
+          "options": [
+            {
+              "option_text": "Values increase",
+              "is_correct": true
+            },
+            {
+              "option_text": "Values decrease",
+              "is_correct": false
+            },
+            {
+              "option_text": "Values become fractions only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Nothing can be compared",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is 4 - (-2)?",
+          "options": [
+            {
+              "option_text": "6",
+              "is_correct": true
+            },
+            {
+              "option_text": "2",
+              "is_correct": false
+            },
+            {
+              "option_text": "-6",
+              "is_correct": false
+            },
+            {
+              "option_text": "-2",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "How far apart are -2 and 3 on the number line?",
+          "options": [
+            {
+              "option_text": "5 units",
+              "is_correct": true
+            },
+            {
+              "option_text": "1 unit",
+              "is_correct": false
+            },
+            {
+              "option_text": "6 units",
+              "is_correct": false
+            },
+            {
+              "option_text": "0 units",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is true about zero?",
+          "options": [
+            {
+              "option_text": "It is neither positive nor negative",
+              "is_correct": true
+            },
+            {
+              "option_text": "It is positive",
+              "is_correct": false
+            },
+            {
+              "option_text": "It is negative",
+              "is_correct": false
+            },
+            {
+              "option_text": "It is the largest integer",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why is the number line useful before algebra?",
+          "options": [
+            {
+              "option_text": "It builds intuition about order, direction, and signed values",
+              "is_correct": true
+            },
+            {
+              "option_text": "It only helps with circles",
+              "is_correct": false
+            },
+            {
+              "option_text": "It replaces equations",
+              "is_correct": false
+            },
+            {
+              "option_text": "It removes the need for arithmetic",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "order-of-operations",
+      "title": "Order Of Operations Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which part of PEMDAS/BODMAS is handled first?",
+          "options": [
+            {
+              "option_text": "Parentheses or brackets",
+              "is_correct": true
+            },
+            {
+              "option_text": "Addition and subtraction",
+              "is_correct": false
+            },
+            {
+              "option_text": "Multiplication only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Division only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is 3 + 4 * 2?",
+          "options": [
+            {
+              "option_text": "11",
+              "is_correct": true
+            },
+            {
+              "option_text": "14",
+              "is_correct": false
+            },
+            {
+              "option_text": "8",
+              "is_correct": false
+            },
+            {
+              "option_text": "7",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is (3 + 4) * 2?",
+          "options": [
+            {
+              "option_text": "14",
+              "is_correct": true
+            },
+            {
+              "option_text": "11",
+              "is_correct": false
+            },
+            {
+              "option_text": "8",
+              "is_correct": false
+            },
+            {
+              "option_text": "7",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "When do exponents get evaluated relative to multiplication?",
+          "options": [
+            {
+              "option_text": "Before multiplication and division",
+              "is_correct": true
+            },
+            {
+              "option_text": "After subtraction only",
+              "is_correct": false
+            },
+            {
+              "option_text": "At the very end always",
+              "is_correct": false
+            },
+            {
+              "option_text": "At the same time as addition",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "How are multiplication and division handled if they appear together?",
+          "options": [
+            {
+              "option_text": "Left to right",
+              "is_correct": true
+            },
+            {
+              "option_text": "Division always first",
+              "is_correct": false
+            },
+            {
+              "option_text": "Multiplication always first",
+              "is_correct": false
+            },
+            {
+              "option_text": "Right to left",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is 18 / 3 * 2?",
+          "options": [
+            {
+              "option_text": "12",
+              "is_correct": true
+            },
+            {
+              "option_text": "3",
+              "is_correct": false
+            },
+            {
+              "option_text": "6",
+              "is_correct": false
+            },
+            {
+              "option_text": "18",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "How are addition and subtraction handled if they appear together?",
+          "options": [
+            {
+              "option_text": "Left to right",
+              "is_correct": true
+            },
+            {
+              "option_text": "Subtraction always first",
+              "is_correct": false
+            },
+            {
+              "option_text": "Addition always first",
+              "is_correct": false
+            },
+            {
+              "option_text": "Right to left",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is 2^3 + 1?",
+          "options": [
+            {
+              "option_text": "9",
+              "is_correct": true
+            },
+            {
+              "option_text": "7",
+              "is_correct": false
+            },
+            {
+              "option_text": "16",
+              "is_correct": false
+            },
+            {
+              "option_text": "5",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why do we use a fixed order of operations?",
+          "options": [
+            {
+              "option_text": "So everyone interprets expressions consistently",
+              "is_correct": true
+            },
+            {
+              "option_text": "So parentheses can be ignored",
+              "is_correct": false
+            },
+            {
+              "option_text": "So multiplication disappears",
+              "is_correct": false
+            },
+            {
+              "option_text": "So fractions are avoided",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which topic benefits directly from mastering order of operations?",
+          "options": [
+            {
+              "option_text": "Algebraic expressions and equations",
+              "is_correct": true
+            },
+            {
+              "option_text": "Only topology",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only biology",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only subject colors",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "decimals-percentages",
+      "title": "Decimals Percentages Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What percentage is equal to 0.5?",
+          "options": [
+            {
+              "option_text": "50%",
+              "is_correct": true
+            },
+            {
+              "option_text": "5%",
+              "is_correct": false
+            },
+            {
+              "option_text": "0.5%",
+              "is_correct": false
+            },
+            {
+              "option_text": "500%",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is 25% of 80?",
+          "options": [
+            {
+              "option_text": "20",
+              "is_correct": true
+            },
+            {
+              "option_text": "15",
+              "is_correct": false
+            },
+            {
+              "option_text": "25",
+              "is_correct": false
+            },
+            {
+              "option_text": "40",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "How do you write 0.34 as a percent?",
+          "options": [
+            {
+              "option_text": "34%",
+              "is_correct": true
+            },
+            {
+              "option_text": "3.4%",
+              "is_correct": false
+            },
+            {
+              "option_text": "340%",
+              "is_correct": false
+            },
+            {
+              "option_text": "0.34%",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which decimal is greater?",
+          "options": [
+            {
+              "option_text": "1.25 is greater than 1.2",
+              "is_correct": true
+            },
+            {
+              "option_text": "1.2 is greater than 1.25",
+              "is_correct": false
+            },
+            {
+              "option_text": "They are equal",
+              "is_correct": false
+            },
+            {
+              "option_text": "Neither is a decimal",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What place value does 0.07 represent?",
+          "options": [
+            {
+              "option_text": "Seven hundredths",
+              "is_correct": true
+            },
+            {
+              "option_text": "Seven tenths",
+              "is_correct": false
+            },
+            {
+              "option_text": "Seven thousandths",
+              "is_correct": false
+            },
+            {
+              "option_text": "Seventy hundredths",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the sale price after a 10% discount on 50?",
+          "options": [
+            {
+              "option_text": "45",
+              "is_correct": true
+            },
+            {
+              "option_text": "40",
+              "is_correct": false
+            },
+            {
+              "option_text": "50",
+              "is_correct": false
+            },
+            {
+              "option_text": "55",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does percent literally mean?",
+          "options": [
+            {
+              "option_text": "Per hundred",
+              "is_correct": true
+            },
+            {
+              "option_text": "Per ten",
+              "is_correct": false
+            },
+            {
+              "option_text": "Per thousand",
+              "is_correct": false
+            },
+            {
+              "option_text": "Per unit vector",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What decimal is equal to 75%?",
+          "options": [
+            {
+              "option_text": "0.75",
+              "is_correct": true
+            },
+            {
+              "option_text": "7.5",
+              "is_correct": false
+            },
+            {
+              "option_text": "0.075",
+              "is_correct": false
+            },
+            {
+              "option_text": "75.0",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "How does 3.46 round to the nearest tenth?",
+          "options": [
+            {
+              "option_text": "3.5",
+              "is_correct": true
+            },
+            {
+              "option_text": "3.4",
+              "is_correct": false
+            },
+            {
+              "option_text": "3.46",
+              "is_correct": false
+            },
+            {
+              "option_text": "4.0",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why are decimals and percentages practical skills?",
+          "options": [
+            {
+              "option_text": "They appear in money, measurement, discounts, and data",
+              "is_correct": true
+            },
+            {
+              "option_text": "They only matter in abstract algebra",
+              "is_correct": false
+            },
+            {
+              "option_text": "They replace ratios entirely",
+              "is_correct": false
+            },
+            {
+              "option_text": "They are used only for circles",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "coordinate-geometry",
+      "title": "Coordinate Geometry Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does an ordered pair (x, y) represent?",
+          "options": [
+            {
+              "option_text": "A point in the coordinate plane",
+              "is_correct": true
+            },
+            {
+              "option_text": "A slope only",
+              "is_correct": false
+            },
+            {
+              "option_text": "A matrix dimension",
+              "is_correct": false
+            },
+            {
+              "option_text": "A triangle side",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which axis is horizontal?",
+          "options": [
+            {
+              "option_text": "x-axis",
+              "is_correct": true
+            },
+            {
+              "option_text": "y-axis",
+              "is_correct": false
+            },
+            {
+              "option_text": "z-axis",
+              "is_correct": false
+            },
+            {
+              "option_text": "radius axis",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "How is slope commonly computed between two points?",
+          "options": [
+            {
+              "option_text": "Rise over run",
+              "is_correct": true
+            },
+            {
+              "option_text": "Run over rise only",
+              "is_correct": false
+            },
+            {
+              "option_text": "Area over perimeter",
+              "is_correct": false
+            },
+            {
+              "option_text": "Output over input",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What does the equation y = mx + b represent?",
+          "options": [
+            {
+              "option_text": "A line in slope-intercept form",
+              "is_correct": true
+            },
+            {
+              "option_text": "A circle equation only",
+              "is_correct": false
+            },
+            {
+              "option_text": "A polynomial factored form",
+              "is_correct": false
+            },
+            {
+              "option_text": "A derivative rule",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which quadrant contains points with x negative and y positive?",
+          "options": [
+            {
+              "option_text": "Quadrant II",
+              "is_correct": true
+            },
+            {
+              "option_text": "Quadrant I",
+              "is_correct": false
+            },
+            {
+              "option_text": "Quadrant III",
+              "is_correct": false
+            },
+            {
+              "option_text": "Quadrant IV",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "How do you find the midpoint between two points?",
+          "options": [
+            {
+              "option_text": "Average the x-coordinates and y-coordinates separately",
+              "is_correct": true
+            },
+            {
+              "option_text": "Subtract both coordinates",
+              "is_correct": false
+            },
+            {
+              "option_text": "Multiply both coordinates",
+              "is_correct": false
+            },
+            {
+              "option_text": "Take the larger coordinate only",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is true of a horizontal line?",
+          "options": [
+            {
+              "option_text": "Its slope is 0",
+              "is_correct": true
+            },
+            {
+              "option_text": "Its slope is undefined",
+              "is_correct": false
+            },
+            {
+              "option_text": "Its slope is always 1",
+              "is_correct": false
+            },
+            {
+              "option_text": "It has no intercept",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is true of a vertical line?",
+          "options": [
+            {
+              "option_text": "Its slope is undefined",
+              "is_correct": true
+            },
+            {
+              "option_text": "Its slope is 0",
+              "is_correct": false
+            },
+            {
+              "option_text": "Its slope is always negative",
+              "is_correct": false
+            },
+            {
+              "option_text": "It cannot be graphed",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why does coordinate geometry connect algebra and geometry?",
+          "options": [
+            {
+              "option_text": "It uses equations to describe geometric objects",
+              "is_correct": true
+            },
+            {
+              "option_text": "It removes the need for points",
+              "is_correct": false
+            },
+            {
+              "option_text": "It only studies percentages",
+              "is_correct": false
+            },
+            {
+              "option_text": "It replaces vectors entirely",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which later topic benefits from coordinate geometry in this graph?",
+          "options": [
+            {
+              "option_text": "Functions, vectors, and trigonometric modeling",
+              "is_correct": true
+            },
+            {
+              "option_text": "Only fractions",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only arithmetic tables",
+              "is_correct": false
+            },
+            {
+              "option_text": "Only subject icons",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "polynomials",
+      "title": "Polynomials Mastery Test",
+      "instructions": "Answer questions about the core concepts, interpretations, and applications for this node.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is a polynomial?",
+          "options": [
+            {
+              "option_text": "An expression made from terms with nonnegative integer exponents",
+              "is_correct": true
+            },
+            {
+              "option_text": "An expression with variables only in denominators",
+              "is_correct": false
+            },
+            {
+              "option_text": "A triangle rule",
+              "is_correct": false
+            },
+            {
+              "option_text": "A matrix operation",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the degree of a polynomial?",
+          "options": [
+            {
+              "option_text": "The highest exponent on its variable",
+              "is_correct": true
+            },
+            {
+              "option_text": "The number of terms",
+              "is_correct": false
+            },
+            {
+              "option_text": "The constant term only",
+              "is_correct": false
+            },
+            {
+              "option_text": "The slope of its graph",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What type of polynomial is x^2 + 3x + 2?",
+          "options": [
+            {
+              "option_text": "Quadratic",
+              "is_correct": true
+            },
+            {
+              "option_text": "Linear",
+              "is_correct": false
+            },
+            {
+              "option_text": "Cubic",
+              "is_correct": false
+            },
+            {
+              "option_text": "Constant",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "How does x^2 - 5x + 6 factor?",
+          "options": [
+            {
+              "option_text": "(x - 2)(x - 3)",
+              "is_correct": true
+            },
+            {
+              "option_text": "(x + 2)(x + 3)",
+              "is_correct": false
+            },
+            {
+              "option_text": "(x - 1)(x - 6)",
+              "is_correct": false
+            },
+            {
+              "option_text": "(x + 1)(x - 6)",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the leading coefficient of 4x^3 - x + 7?",
+          "options": [
+            {
+              "option_text": "4",
+              "is_correct": true
+            },
+            {
+              "option_text": "3",
+              "is_correct": false
+            },
+            {
+              "option_text": "-1",
+              "is_correct": false
+            },
+            {
+              "option_text": "7",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "How do you add polynomials?",
+          "options": [
+            {
+              "option_text": "Combine like terms",
+              "is_correct": true
+            },
+            {
+              "option_text": "Multiply every term automatically",
+              "is_correct": false
+            },
+            {
+              "option_text": "Take the derivative first",
+              "is_correct": false
+            },
+            {
+              "option_text": "Rewrite everything as fractions",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is a root or zero of a polynomial?",
+          "options": [
+            {
+              "option_text": "A value that makes the polynomial equal zero",
+              "is_correct": true
+            },
+            {
+              "option_text": "The highest exponent",
+              "is_correct": false
+            },
+            {
+              "option_text": "The constant term",
+              "is_correct": false
+            },
+            {
+              "option_text": "Any positive input",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What degree is a cubic polynomial?",
+          "options": [
+            {
+              "option_text": "3",
+              "is_correct": true
+            },
+            {
+              "option_text": "2",
+              "is_correct": false
+            },
+            {
+              "option_text": "4",
+              "is_correct": false
+            },
+            {
+              "option_text": "1",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is (x + 1)^2 expanded?",
+          "options": [
+            {
+              "option_text": "x^2 + 2x + 1",
+              "is_correct": true
+            },
+            {
+              "option_text": "x^2 + 1",
+              "is_correct": false
+            },
+            {
+              "option_text": "x^2 + x + 1",
+              "is_correct": false
+            },
+            {
+              "option_text": "2x + 1",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Why are polynomials important for later math?",
+          "options": [
+            {
+              "option_text": "They model many common functions and algebraic patterns",
+              "is_correct": true
+            },
+            {
+              "option_text": "They only matter for geometry proofs",
+              "is_correct": false
+            },
+            {
+              "option_text": "They replace all equations",
+              "is_correct": false
+            },
+            {
+              "option_text": "They are used only for percentages",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

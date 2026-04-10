@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS public.nodes (
   description TEXT NOT NULL DEFAULT '',
   why_it_matters TEXT,
   use_cases TEXT[] DEFAULT '{}',
-  difficulty INTEGER NOT NULL DEFAULT 1 CHECK (difficulty >= 1 AND difficulty <= 5),
+  difficulty INTEGER NOT NULL DEFAULT 1 CHECK (difficulty >= 1 AND difficulty <= 10),
   -- Graph position for React Flow
   position_x FLOAT NOT NULL DEFAULT 0,
   position_y FLOAT NOT NULL DEFAULT 0,
@@ -54,8 +54,8 @@ CREATE TABLE IF NOT EXISTS public.nodes (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_nodes_subject ON public.nodes(subject_id);
-CREATE INDEX idx_nodes_slug ON public.nodes(slug);
+CREATE INDEX IF NOT EXISTS idx_nodes_subject ON public.nodes(subject_id);
+CREATE INDEX IF NOT EXISTS idx_nodes_slug ON public.nodes(slug);
 
 -- =============================================
 -- 4. EDGES TABLE
@@ -70,8 +70,8 @@ CREATE TABLE IF NOT EXISTS public.edges (
   UNIQUE(source_node_id, target_node_id, relationship_type)
 );
 
-CREATE INDEX idx_edges_source ON public.edges(source_node_id);
-CREATE INDEX idx_edges_target ON public.edges(target_node_id);
+CREATE INDEX IF NOT EXISTS idx_edges_source ON public.edges(source_node_id);
+CREATE INDEX IF NOT EXISTS idx_edges_target ON public.edges(target_node_id);
 
 -- =============================================
 -- 5. PREREQUISITES TABLE
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS public.prerequisites (
   CHECK (node_id != prerequisite_node_id)
 );
 
-CREATE INDEX idx_prereqs_node ON public.prerequisites(node_id);
+CREATE INDEX IF NOT EXISTS idx_prereqs_node ON public.prerequisites(node_id);
 
 -- =============================================
 -- 6. MASTERY TESTS TABLE
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS public.mastery_tests (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_tests_node ON public.mastery_tests(node_id);
+CREATE INDEX IF NOT EXISTS idx_tests_node ON public.mastery_tests(node_id);
 
 -- =============================================
 -- 7. MASTERY QUESTIONS TABLE
@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS public.mastery_questions (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_questions_test ON public.mastery_questions(mastery_test_id);
+CREATE INDEX IF NOT EXISTS idx_questions_test ON public.mastery_questions(mastery_test_id);
 
 -- =============================================
 -- 8. MASTERY QUESTION OPTIONS TABLE
@@ -129,7 +129,7 @@ CREATE TABLE IF NOT EXISTS public.mastery_question_options (
   order_index INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE INDEX idx_options_question ON public.mastery_question_options(question_id);
+CREATE INDEX IF NOT EXISTS idx_options_question ON public.mastery_question_options(question_id);
 
 -- =============================================
 -- 9. USER NODE PROGRESS TABLE
@@ -146,8 +146,8 @@ CREATE TABLE IF NOT EXISTS public.user_node_progress (
   UNIQUE(user_id, node_id)
 );
 
-CREATE INDEX idx_progress_user ON public.user_node_progress(user_id);
-CREATE INDEX idx_progress_node ON public.user_node_progress(node_id);
+CREATE INDEX IF NOT EXISTS idx_progress_user ON public.user_node_progress(user_id);
+CREATE INDEX IF NOT EXISTS idx_progress_node ON public.user_node_progress(node_id);
 
 -- =============================================
 -- 10. MASTERY ATTEMPTS TABLE
@@ -163,8 +163,8 @@ CREATE TABLE IF NOT EXISTS public.mastery_attempts (
   submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_attempts_user ON public.mastery_attempts(user_id);
-CREATE INDEX idx_attempts_node ON public.mastery_attempts(node_id);
+CREATE INDEX IF NOT EXISTS idx_attempts_user ON public.mastery_attempts(user_id);
+CREATE INDEX IF NOT EXISTS idx_attempts_node ON public.mastery_attempts(node_id);
 
 -- =============================================
 -- ROW LEVEL SECURITY POLICIES
@@ -183,41 +183,71 @@ ALTER TABLE public.user_node_progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.mastery_attempts ENABLE ROW LEVEL SECURITY;
 
 -- Public read access for learning content
+DROP POLICY IF EXISTS "Public read subjects" ON public.subjects;
 CREATE POLICY "Public read subjects" ON public.subjects FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public read nodes" ON public.nodes;
 CREATE POLICY "Public read nodes" ON public.nodes FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public read edges" ON public.edges;
 CREATE POLICY "Public read edges" ON public.edges FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public read prerequisites" ON public.prerequisites;
 CREATE POLICY "Public read prerequisites" ON public.prerequisites FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public read tests" ON public.mastery_tests;
 CREATE POLICY "Public read tests" ON public.mastery_tests FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public read questions" ON public.mastery_questions;
 CREATE POLICY "Public read questions" ON public.mastery_questions FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public read options" ON public.mastery_question_options;
 CREATE POLICY "Public read options" ON public.mastery_question_options FOR SELECT USING (true);
 
 -- Authenticated user policies for content creation
+DROP POLICY IF EXISTS "Auth insert nodes" ON public.nodes;
 CREATE POLICY "Auth insert nodes" ON public.nodes FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Auth update nodes" ON public.nodes;
 CREATE POLICY "Auth update nodes" ON public.nodes FOR UPDATE USING (true);
+DROP POLICY IF EXISTS "Auth insert edges" ON public.edges;
 CREATE POLICY "Auth insert edges" ON public.edges FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Auth delete edges" ON public.edges;
 CREATE POLICY "Auth delete edges" ON public.edges FOR DELETE USING (true);
+DROP POLICY IF EXISTS "Auth insert prereqs" ON public.prerequisites;
 CREATE POLICY "Auth insert prereqs" ON public.prerequisites FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Auth delete prereqs" ON public.prerequisites;
 CREATE POLICY "Auth delete prereqs" ON public.prerequisites FOR DELETE USING (true);
+DROP POLICY IF EXISTS "Auth insert tests" ON public.mastery_tests;
 CREATE POLICY "Auth insert tests" ON public.mastery_tests FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Auth update tests" ON public.mastery_tests;
 CREATE POLICY "Auth update tests" ON public.mastery_tests FOR UPDATE USING (true);
+DROP POLICY IF EXISTS "Auth insert questions" ON public.mastery_questions;
 CREATE POLICY "Auth insert questions" ON public.mastery_questions FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Auth update questions" ON public.mastery_questions;
 CREATE POLICY "Auth update questions" ON public.mastery_questions FOR UPDATE USING (true);
+DROP POLICY IF EXISTS "Auth delete questions" ON public.mastery_questions;
 CREATE POLICY "Auth delete questions" ON public.mastery_questions FOR DELETE USING (true);
+DROP POLICY IF EXISTS "Auth insert options" ON public.mastery_question_options;
 CREATE POLICY "Auth insert options" ON public.mastery_question_options FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Auth update options" ON public.mastery_question_options;
 CREATE POLICY "Auth update options" ON public.mastery_question_options FOR UPDATE USING (true);
+DROP POLICY IF EXISTS "Auth delete options" ON public.mastery_question_options;
 CREATE POLICY "Auth delete options" ON public.mastery_question_options FOR DELETE USING (true);
+DROP POLICY IF EXISTS "Auth insert subjects" ON public.subjects;
 CREATE POLICY "Auth insert subjects" ON public.subjects FOR INSERT WITH CHECK (true);
 
 -- User-specific progress policies
+DROP POLICY IF EXISTS "Users read own progress" ON public.user_node_progress;
 CREATE POLICY "Users read own progress" ON public.user_node_progress FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Users insert own progress" ON public.user_node_progress;
 CREATE POLICY "Users insert own progress" ON public.user_node_progress FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Users update own progress" ON public.user_node_progress;
 CREATE POLICY "Users update own progress" ON public.user_node_progress FOR UPDATE USING (true);
 
+DROP POLICY IF EXISTS "Users read own attempts" ON public.mastery_attempts;
 CREATE POLICY "Users read own attempts" ON public.mastery_attempts FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Users insert own attempts" ON public.mastery_attempts;
 CREATE POLICY "Users insert own attempts" ON public.mastery_attempts FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Users read all users" ON public.users;
 CREATE POLICY "Users read all users" ON public.users FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Users insert" ON public.users;
 CREATE POLICY "Users insert" ON public.users FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Users update own" ON public.users;
 CREATE POLICY "Users update own" ON public.users FOR UPDATE USING (true);
 
 -- =============================================
@@ -233,11 +263,14 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS update_users_updated_at ON public.users;
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON public.users
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_nodes_updated_at ON public.nodes;
 CREATE TRIGGER update_nodes_updated_at BEFORE UPDATE ON public.nodes
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_mastery_tests_updated_at ON public.mastery_tests;
 CREATE TRIGGER update_mastery_tests_updated_at BEFORE UPDATE ON public.mastery_tests
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

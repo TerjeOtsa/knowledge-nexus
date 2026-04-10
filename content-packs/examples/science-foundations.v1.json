@@ -1,0 +1,193 @@
+{
+  "$schema": "../schema/content-pack.v1.schema.json",
+  "format": "knowledge-nexus/content-pack",
+  "version": 1,
+  "metadata": {
+    "id": "science-foundations",
+    "title": "Science Foundations",
+    "description": "A starter pack that adds chemistry and biology foundations with a small cross-subject bridge.",
+    "author": "Knowledge Nexus",
+    "updated_at": "2026-04-10"
+  },
+  "subjects": [
+    {
+      "key": "chemistry",
+      "name": "Chemistry",
+      "color": "#14b8a6",
+      "description": "The study of substances, their structure, properties, and transformations.",
+      "icon": "🧪"
+    },
+    {
+      "key": "biology",
+      "name": "Biology",
+      "color": "#84cc16",
+      "description": "The study of living systems, from cells to ecosystems.",
+      "icon": "🧬"
+    }
+  ],
+  "nodes": [
+    {
+      "key": "atomic-structure",
+      "title": "Atomic Structure",
+      "slug": "atomic-structure",
+      "subject": "chemistry",
+      "topic": "Foundations",
+      "description": "Atomic structure covers protons, neutrons, electrons, isotopes, and electron arrangement.",
+      "why_it_matters": "It explains why elements behave differently and how matter is built.",
+      "use_cases": ["Reading the periodic table", "Spectroscopy", "Bonding models"],
+      "difficulty": 1,
+      "position": { "x": 0, "y": 0 }
+    },
+    {
+      "key": "chemical-bonding",
+      "title": "Chemical Bonding",
+      "slug": "chemical-bonding",
+      "subject": "chemistry",
+      "topic": "General Chemistry",
+      "description": "Chemical bonding explains how atoms form ionic, covalent, and metallic bonds.",
+      "why_it_matters": "Bonding determines the structure and behavior of molecules and materials.",
+      "use_cases": ["Molecule models", "Material properties", "Drug design"],
+      "difficulty": 2,
+      "position": { "x": 0, "y": 0 }
+    },
+    {
+      "key": "biomolecules",
+      "title": "Biomolecules",
+      "slug": "biomolecules",
+      "subject": "biology",
+      "topic": "Foundations",
+      "description": "Biomolecules include carbohydrates, lipids, proteins, and nucleic acids.",
+      "why_it_matters": "They are the chemical building blocks of cells and life processes.",
+      "use_cases": ["Nutrition", "Cell structure", "Genetics"],
+      "difficulty": 1,
+      "position": { "x": 0, "y": 0 }
+    },
+    {
+      "key": "cell-structure",
+      "title": "Cell Structure",
+      "slug": "cell-structure",
+      "subject": "biology",
+      "topic": "Cell Biology",
+      "description": "Cells contain membranes, organelles, and internal systems that support life.",
+      "why_it_matters": "Cell structure is the foundation for understanding how organisms function.",
+      "use_cases": ["Microscopy", "Medicine", "Microbiology"],
+      "difficulty": 1,
+      "position": { "x": 0, "y": 0 }
+    },
+    {
+      "key": "molecular-biology",
+      "title": "Molecular Biology",
+      "slug": "molecular-biology",
+      "subject": "biology",
+      "topic": "Molecular Biology",
+      "description": "Molecular biology explores gene expression, protein synthesis, and regulation at the molecular level.",
+      "why_it_matters": "It is central to biotechnology, disease research, and modern genetics.",
+      "use_cases": ["PCR", "Gene regulation", "Biotech"],
+      "difficulty": 5,
+      "position": { "x": 0, "y": 0 }
+    }
+  ],
+  "edges": [
+    {
+      "source": "atomic-structure",
+      "target": "chemical-bonding",
+      "relationship_type": "leads_to"
+    },
+    {
+      "source": "biomolecules",
+      "target": "cell-structure",
+      "relationship_type": "leads_to"
+    },
+    {
+      "source": "biomolecules",
+      "target": "molecular-biology",
+      "relationship_type": "leads_to"
+    },
+    {
+      "source": "chemical-bonding",
+      "target": "biomolecules",
+      "relationship_type": "explains"
+    },
+    {
+      "source": "cell-structure",
+      "target": "molecular-biology",
+      "relationship_type": "leads_to"
+    }
+  ],
+  "prerequisites": [
+    {
+      "node": "chemical-bonding",
+      "prerequisite": "atomic-structure"
+    },
+    {
+      "node": "cell-structure",
+      "prerequisite": "biomolecules"
+    },
+    {
+      "node": "molecular-biology",
+      "prerequisite": "biomolecules"
+    }
+  ],
+  "tests": [
+    {
+      "node": "atomic-structure",
+      "title": "Atomic Structure Test",
+      "instructions": "Test your understanding of atoms and subatomic structure.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What is the smallest unit of an element that still retains that element's identity?",
+          "explanation": "That unit is the atom.",
+          "options": [
+            { "option_text": "Atom", "is_correct": true },
+            { "option_text": "Molecule", "is_correct": false },
+            { "option_text": "Compound", "is_correct": false },
+            { "option_text": "Solution", "is_correct": false }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which subatomic particle has a positive charge?",
+          "explanation": "Protons carry positive charge.",
+          "options": [
+            { "option_text": "Electron", "is_correct": false },
+            { "option_text": "Proton", "is_correct": true },
+            { "option_text": "Neutron", "is_correct": false },
+            { "option_text": "Photon", "is_correct": false }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "cell-structure",
+      "title": "Cell Structure Test",
+      "instructions": "Test your understanding of the main parts of a cell.",
+      "passing_score": 70,
+      "questions": [
+        {
+          "question_type": "multiple_choice",
+          "prompt": "Which organelle is often called the powerhouse of the cell?",
+          "explanation": "Mitochondria release usable energy for the cell.",
+          "options": [
+            { "option_text": "Ribosome", "is_correct": false },
+            { "option_text": "Mitochondrion", "is_correct": true },
+            { "option_text": "Golgi apparatus", "is_correct": false },
+            { "option_text": "Lysosome", "is_correct": false }
+          ]
+        },
+        {
+          "question_type": "multiple_choice",
+          "prompt": "What structure surrounds the cell and controls what enters and leaves?",
+          "explanation": "That role belongs to the cell membrane.",
+          "options": [
+            { "option_text": "Cell membrane", "is_correct": true },
+            { "option_text": "Nucleus", "is_correct": false },
+            { "option_text": "Cytoplasm", "is_correct": false },
+            { "option_text": "Cell wall", "is_correct": false }
+          ]
+        }
+      ]
+    }
+  ]
+}

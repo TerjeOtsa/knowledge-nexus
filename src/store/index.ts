@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { User, KnowledgeNode, Edge, Subject, UserNodeProgress, NodeStatus, MasteryTest } from '@/types';
+import type { User, KnowledgeNode, Edge, Subject, UserNodeProgress, NodeStatus, MasteryTest, UserNodeNote } from '@/types';
 
 // =============================================
 // Auth Store
@@ -26,6 +26,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 interface GraphState {
   nodes: KnowledgeNode[];
   edges: Edge[];
+  prerequisites: { id: string; node_id: string; prerequisite_node_id: string; created_at: string }[];
   subjects: Subject[];
   userProgress: Record<string, UserNodeProgress>; // keyed by node_id
   selectedNodeId: string | null;
@@ -43,6 +44,7 @@ interface GraphState {
   setEdges: (edges: Edge[]) => void;
   addEdge: (edge: Edge) => void;
   removeEdge: (id: string) => void;
+  setPrerequisites: (prerequisites: { id: string; node_id: string; prerequisite_node_id: string; created_at: string }[]) => void;
   setSubjects: (subjects: Subject[]) => void;
   setUserProgress: (progress: Record<string, UserNodeProgress>) => void;
   updateNodeProgress: (nodeId: string, progress: UserNodeProgress) => void;
@@ -58,13 +60,14 @@ interface GraphState {
 export const useGraphStore = create<GraphState>((set, get) => ({
   nodes: [],
   edges: [],
+  prerequisites: [],
   subjects: [],
   userProgress: {},
   selectedNodeId: null,
   isDetailPanelOpen: false,
   searchQuery: '',
   subjectFilter: null,
-  showEdgeLabels: true,
+  showEdgeLabels: false,
   graphMode: 'learn',
 
   setNodes: (nodes) => set({ nodes }),
@@ -81,6 +84,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
   setEdges: (edges) => set({ edges }),
   addEdge: (edge) => set((state) => ({ edges: [...state.edges, edge] })),
   removeEdge: (id) => set((state) => ({ edges: state.edges.filter((e) => e.id !== id) })),
+  setPrerequisites: (prerequisites) => set({ prerequisites }),
   setSubjects: (subjects) => set({ subjects }),
   setUserProgress: (progress) => set({ userProgress: progress }),
   updateNodeProgress: (nodeId, progress) =>
@@ -131,4 +135,41 @@ export const useTestStore = create<TestState>((set) => ({
   setSubmitting: (isSubmitting) => set({ isSubmitting }),
   setTestModalOpen: (open) => set({ isTestModalOpen: open }),
   reset: () => set({ currentTest: null, currentNodeId: null, answers: {}, isSubmitting: false, isTestModalOpen: false }),
+}));
+
+// =============================================
+// Notes Store — per-node notepad + master notes
+// =============================================
+interface NotesState {
+  notesByNodeId: Record<string, UserNodeNote>;
+  isSaving: boolean;
+  lastSavedAt: string | null;
+
+  setNote: (nodeId: string, note: UserNodeNote) => void;
+  updateNoteContent: (nodeId: string, content: string) => void;
+  setSaving: (saving: boolean) => void;
+  setLastSaved: (time: string) => void;
+}
+
+export const useNotesStore = create<NotesState>((set) => ({
+  notesByNodeId: {},
+  isSaving: false,
+  lastSavedAt: null,
+
+  setNote: (nodeId, note) =>
+    set((state) => ({
+      notesByNodeId: { ...state.notesByNodeId, [nodeId]: note },
+    })),
+  updateNoteContent: (nodeId, content) =>
+    set((state) => ({
+      notesByNodeId: {
+        ...state.notesByNodeId,
+        [nodeId]: {
+          ...(state.notesByNodeId[nodeId] || { id: '', user_id: '', node_id: nodeId, created_at: '', updated_at: '' }),
+          content,
+        },
+      },
+    })),
+  setSaving: (isSaving) => set({ isSaving }),
+  setLastSaved: (lastSavedAt) => set({ lastSavedAt }),
 }));

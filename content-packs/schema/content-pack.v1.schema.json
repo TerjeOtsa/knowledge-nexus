@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-nexus.local/content-pack.v1.schema.json",
+  "title": "Knowledge Nexus Content Pack v1",
+  "type": "object",
+  "required": ["format", "version", "metadata"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "format": {
+      "const": "knowledge-nexus/content-pack"
+    },
+    "version": {
+      "const": 1
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["id", "title"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "author": { "type": "string" },
+        "updated_at": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "subjects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "name", "color"],
+        "properties": {
+          "key": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+          "description": { "type": "string" },
+          "icon": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "default": []
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "title", "description"],
+        "properties": {
+          "key": { "type": "string", "minLength": 1 },
+          "title": { "type": "string", "minLength": 1 },
+          "slug": { "type": "string", "minLength": 1 },
+          "subject": { "type": ["string", "null"] },
+          "topic": { "type": ["string", "null"] },
+          "description": { "type": "string", "minLength": 1 },
+          "why_it_matters": { "type": ["string", "null"] },
+          "use_cases": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": []
+          },
+          "difficulty": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 1
+          },
+          "position": {
+            "type": "object",
+            "required": ["x", "y"],
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "default": []
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "target", "relationship_type"],
+        "properties": {
+          "source": { "type": "string", "minLength": 1 },
+          "target": { "type": "string", "minLength": 1 },
+          "relationship_type": {
+            "type": "string",
+            "enum": ["requires", "used_in", "explains", "related_to", "application_of", "leads_to"]
+          }
+        },
+        "additionalProperties": false
+      },
+      "default": []
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["node", "prerequisite"],
+        "properties": {
+          "node": { "type": "string", "minLength": 1 },
+          "prerequisite": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": false
+      },
+      "default": []
+    },
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["node", "title", "questions"],
+        "properties": {
+          "node": { "type": "string", "minLength": 1 },
+          "title": { "type": "string", "minLength": 1 },
+          "instructions": { "type": ["string", "null"] },
+          "passing_score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "default": 70
+          },
+          "questions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["question_type", "prompt"],
+              "properties": {
+                "question_type": {
+                  "type": "string",
+                  "enum": ["multiple_choice", "short_answer", "matching", "applied_scenario"]
+                },
+                "prompt": { "type": "string", "minLength": 1 },
+                "explanation": { "type": ["string", "null"] },
+                "order_index": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "options": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["option_text", "is_correct"],
+                    "properties": {
+                      "option_text": { "type": "string", "minLength": 1 },
+                      "is_correct": { "type": "boolean" },
+                      "order_index": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "default": []
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "default": []
+    }
+  },
+  "additionalProperties": false
+}

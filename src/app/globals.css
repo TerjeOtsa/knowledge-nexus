@@ -39,6 +39,22 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+/* Dark graph background — radial glow from center */
+.bg-slate-950 .react-flow__background {
+  background: radial-gradient(ellipse at center, #1e1b4b 0%, #0f172a 50%, #020617 100%);
+}
+
+/* Smooth edge animations */
+.react-flow__edge.animated path {
+  animation: dash 1.5s linear infinite;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;

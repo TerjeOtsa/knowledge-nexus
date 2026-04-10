@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store';
 import { Button } from '@/components/ui/button';
 import {
-  Network, LayoutDashboard, LogIn, LogOut, User, BookOpen
+  Network, LayoutDashboard, LogIn, LogOut, User, BookOpen, FileText
 } from 'lucide-react';
 
 export function Navbar() {
@@ -26,6 +26,7 @@ export function Navbar() {
 
   const navItems = [
     { href: '/graph', label: 'Graph', icon: Network },
+    { href: '/notes', label: 'Notes', icon: FileText },
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   ];
 
