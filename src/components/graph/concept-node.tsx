@@ -13,12 +13,12 @@ interface ConceptNodeData {
   topic?: string;
   nodeData: KnowledgeNode;
   connectedSubjectColors?: string[];
+  dimmed?: boolean;
+  searchMatched?: boolean;
+  searchActive?: boolean;
   [key: string]: unknown;
 }
 
-/**
- * Blend an array of hex colors into one averaged color.
- */
 function blendColors(colors: string[]): string {
   if (colors.length === 0) return '#6b7280';
   if (colors.length === 1) return colors[0];
@@ -34,96 +34,103 @@ function blendColors(colors: string[]): string {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
-/**
- * PoE-inspired node tiers based on difficulty:
- *   1-2 → small (basic passive)
- *   3-4 → notable
- *   5   → keystone
- */
 function getNodeTier(difficulty: number): 'small' | 'notable' | 'keystone' {
   if (difficulty <= 2) return 'small';
   if (difficulty <= 4) return 'notable';
   return 'keystone';
 }
 
-/**
- * Path of Exile-inspired concept node.
- * Dark backgrounds, glowing borders, tier-based sizing.
- * Mastered = bright glow, in_progress = dim pulse, untouched = dark.
- */
 function ConceptNodeComponent({ data, selected }: NodeProps & { data: ConceptNodeData }) {
   const subjectColor = data.subject?.color || '#6b7280';
   const connectedColors = data.connectedSubjectColors || [subjectColor];
   const isMultiSubject = connectedColors.length > 1;
-  const glowColor = isMultiSubject ? blendColors(connectedColors) : subjectColor;
   const tier = getNodeTier(data.difficulty);
+  const isDimmed = Boolean(data.dimmed);
+  const isSearchMatched = Boolean(data.searchMatched);
+  const isSearchActive = Boolean(data.searchActive);
 
-  // Status-based glow intensity
   const isMastered = data.status === 'mastered';
   const isInProgress = data.status === 'in_progress';
+  const baseGlowColor = isMultiSubject ? blendColors(connectedColors) : subjectColor;
+  const masteryGlowColor = '#22c55e';
+  const glowColor = isMastered ? masteryGlowColor : baseGlowColor;
+  const fillColor = isMastered ? blendColors([baseGlowColor, masteryGlowColor]) : glowColor;
+  const searchGlowColor = '#fef08a';
 
-  // Tier sizing (2.3x scale: small=120, notable=156, keystone=193)
   const sizeClasses = {
     small: 'w-[120px] h-[120px]',
     notable: 'w-[156px] h-[156px]',
     keystone: 'w-[193px] h-[193px]',
   };
 
-  // Border thickness by tier
   const borderWidth = tier === 'keystone' ? 4 : tier === 'notable' ? 3.5 : 3;
+  const glowIntensity = isMastered ? 0.95 : isInProgress ? 0.62 : 0.28;
+  const glowSpread = tier === 'keystone' ? 52 : tier === 'notable' ? 36 : 24;
+  const bgOpacity = isMastered ? 0.48 : isInProgress ? 0.34 : 0.2;
 
-  // Glow strength
-  const glowIntensity = isMastered ? 0.9 : isInProgress ? 0.45 : 0.15;
-  const glowSpread = tier === 'keystone' ? 40 : tier === 'notable' ? 28 : 18;
-
-  // Inner bg opacity (darker for untouched, lighter for mastered)
-  const bgOpacity = isMastered ? 0.35 : isInProgress ? 0.2 : 0.1;
-
-  // Shape: keystone = octagon-ish (rounded square), notable = rounded, small = circle
   const shapeClass = {
     small: 'rounded-full',
     notable: 'rounded-xl',
     keystone: 'rounded-lg',
   };
 
-  // Text size (1.5x: 8→12, 9→13.5≈14, 10→15)
   const textSize = tier === 'keystone' ? 'text-[15px]' : tier === 'notable' ? 'text-[14px]' : 'text-[12px]';
 
   return (
-    <div className="relative flex items-center justify-center" title={getDifficultyLabel(data.difficulty)}>
-      {/* Outer glow ring (PoE allocated-node feel) */}
+    <div
+      className="relative flex items-center justify-center"
+      title={getDifficultyLabel(data.difficulty)}
+      style={{
+        opacity: isDimmed ? (isSearchActive ? 0.16 : 0.28) : 1,
+        filter: isDimmed
+          ? isSearchActive
+            ? 'saturate(0.45) brightness(0.54)'
+            : 'saturate(0.65) brightness(0.72)'
+          : 'none',
+        transition: 'opacity 180ms ease, filter 180ms ease',
+      }}
+    >
       <div
         className={`absolute ${sizeClasses[tier]} ${shapeClass[tier]} pointer-events-none`}
         style={{
-          boxShadow: `0 0 ${glowSpread}px ${Math.round(glowSpread * 0.6)}px ${glowColor}${Math.round(glowIntensity * 255).toString(16).padStart(2, '0')}`,
+          boxShadow: isSearchMatched
+            ? `0 0 ${glowSpread + 18}px ${Math.round(glowSpread * 0.75)}px ${glowColor}${Math.round(glowIntensity * 255).toString(16).padStart(2, '0')}, 0 0 ${glowSpread + 34}px ${Math.round(glowSpread * 0.55)}px ${searchGlowColor}66`
+            : `0 0 ${glowSpread}px ${Math.round(glowSpread * 0.6)}px ${glowColor}${Math.round(glowIntensity * 255).toString(16).padStart(2, '0')}`,
         }}
       />
 
-      {/* Mastered pulse animation */}
+      {isSearchMatched && (
+        <div
+          className={`absolute ${sizeClasses[tier]} ${shapeClass[tier]} pointer-events-none`}
+          style={{
+            border: `2px solid ${searchGlowColor}cc`,
+            boxShadow: `0 0 20px 7px ${searchGlowColor}7a, inset 0 0 14px ${searchGlowColor}33`,
+          }}
+        />
+      )}
+
       {isMastered && (
         <div
           className={`absolute ${sizeClasses[tier]} ${shapeClass[tier]} animate-ping pointer-events-none`}
           style={{
             backgroundColor: glowColor,
-            opacity: 0.15,
+            opacity: 0.2,
             animationDuration: '3s',
           }}
         />
       )}
 
-      {/* In-progress subtle pulse */}
       {isInProgress && (
         <div
           className={`absolute ${sizeClasses[tier]} ${shapeClass[tier]} animate-pulse pointer-events-none`}
           style={{
             backgroundColor: glowColor,
-            opacity: 0.1,
+            opacity: 0.16,
             animationDuration: '2.5s',
           }}
         />
       )}
 
-      {/* Main node body */}
       <div
         className={`
           relative ${sizeClasses[tier]} ${shapeClass[tier]}
@@ -132,14 +139,15 @@ function ConceptNodeComponent({ data, selected }: NodeProps & { data: ConceptNod
           ${selected ? 'scale-110' : 'hover:scale-105'}
         `}
         style={{
-          background: `radial-gradient(ellipse at 30% 30%, ${glowColor}${Math.round(bgOpacity * 255).toString(16).padStart(2, '0')}, #0a0e1a ${isMastered ? '90%' : '70%'})`,
-          border: `${borderWidth}px solid ${glowColor}${Math.round((isMastered ? 0.9 : isInProgress ? 0.5 : 0.25) * 255).toString(16).padStart(2, '0')}`,
+          background: `radial-gradient(ellipse at 30% 28%, ${fillColor}${Math.round((bgOpacity + 0.08) * 255).toString(16).padStart(2, '0')}, ${glowColor}22 42%, #10182a 78%)`,
+          border: `${borderWidth}px solid ${(isSearchMatched ? searchGlowColor : glowColor)}${Math.round((isMastered ? 0.95 : isInProgress ? 0.72 : isSearchMatched ? 0.8 : 0.45) * 255).toString(16).padStart(2, '0')}`,
           boxShadow: selected
-            ? `0 0 20px 8px ${glowColor}88, inset 0 0 12px ${glowColor}33`
-            : `inset 0 0 ${tier === 'keystone' ? 15 : 8}px ${glowColor}${Math.round(bgOpacity * 0.6 * 255).toString(16).padStart(2, '0')}`,
+            ? `0 0 26px 10px ${(isSearchMatched ? searchGlowColor : glowColor)}aa, inset 0 0 18px ${glowColor}55`
+            : isSearchMatched
+              ? `0 0 ${tier === 'keystone' ? 28 : 18}px ${searchGlowColor}88, 0 0 ${tier === 'keystone' ? 18 : 10}px ${glowColor}${Math.round((glowIntensity * 0.5) * 255).toString(16).padStart(2, '0')}, inset 0 0 ${tier === 'keystone' ? 18 : 10}px ${glowColor}${Math.round(bgOpacity * 0.75 * 255).toString(16).padStart(2, '0')}`
+              : `0 0 ${tier === 'keystone' ? 18 : 10}px ${glowColor}${Math.round((glowIntensity * 0.5) * 255).toString(16).padStart(2, '0')}, inset 0 0 ${tier === 'keystone' ? 18 : 10}px ${glowColor}${Math.round(bgOpacity * 0.75 * 255).toString(16).padStart(2, '0')}`,
         }}
       >
-        {/* Multi-subject indicator — small dots at top for cross-subject nodes */}
         {isMultiSubject && (
           <div className="absolute -top-2 flex gap-1">
             {connectedColors.slice(0, 4).map((color, idx) => (
@@ -152,18 +160,22 @@ function ConceptNodeComponent({ data, selected }: NodeProps & { data: ConceptNod
           </div>
         )}
 
-        {/* Node label */}
         <span
           className={`${textSize} font-bold text-center leading-tight px-2 max-w-full`}
           style={{
-            color: isMastered ? '#ffffff' : isInProgress ? '#e2e8f0' : '#94a3b8',
-            textShadow: isMastered ? `0 0 6px ${glowColor}` : 'none',
+            color: isSearchMatched ? '#fffef0' : isMastered ? '#ffffff' : isInProgress ? '#f1f5f9' : '#cbd5e1',
+            textShadow: isSearchMatched
+              ? `0 0 12px ${searchGlowColor}, 0 0 8px ${glowColor}`
+              : isMastered
+              ? `0 0 9px ${glowColor}`
+              : isInProgress
+                ? `0 0 6px ${glowColor}88`
+                : `0 0 4px ${glowColor}55`,
           }}
         >
           {data.label}
         </span>
 
-        {/* Difficulty pips — only for notable and keystone */}
         {tier !== 'small' && (
           <div className="flex items-center gap-1 mt-1">
             {Array.from({ length: 5 }, (_, i) => (
@@ -173,9 +185,7 @@ function ConceptNodeComponent({ data, selected }: NodeProps & { data: ConceptNod
                 style={{
                   width: tier === 'keystone' ? 6 : 5,
                   height: tier === 'keystone' ? 6 : 5,
-                  backgroundColor: i < data.difficulty
-                    ? glowColor
-                    : `${glowColor}33`,
+                  backgroundColor: i < data.difficulty ? glowColor : `${glowColor}33`,
                   boxShadow: i < data.difficulty ? `0 0 3px ${glowColor}` : 'none',
                 }}
               />
@@ -183,7 +193,6 @@ function ConceptNodeComponent({ data, selected }: NodeProps & { data: ConceptNod
           </div>
         )}
 
-        {/* Mastered checkmark */}
         {isMastered && (
           <div
             className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center text-sm"
@@ -199,7 +208,6 @@ function ConceptNodeComponent({ data, selected }: NodeProps & { data: ConceptNod
         )}
       </div>
 
-      {/* Handles for connections — bidirectional for spider-web layout */}
       <Handle type="source" position={Position.Top} id="top-src" className="w-1! h-1! bg-transparent! border-0! opacity-0!" />
       <Handle type="target" position={Position.Top} id="top-tgt" className="w-1! h-1! bg-transparent! border-0! opacity-0!" />
       <Handle type="source" position={Position.Bottom} id="bottom-src" className="w-1! h-1! bg-transparent! border-0! opacity-0!" />

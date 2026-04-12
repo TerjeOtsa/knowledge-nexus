@@ -80,6 +80,7 @@ export function NodeDetailPanel({
   const { node, outgoingEdges, incomingEdges, prerequisites, dependents, masteryTest } = details;
   const progress = userProgress[nodeId];
   const status = progress?.status || 'untouched';
+  const isMastered = status === 'mastered';
 
   const statusConfig = {
     untouched: { label: 'Not Started', color: 'bg-blue-100 text-blue-800', icon: BookOpen },
@@ -90,9 +91,16 @@ export function NodeDetailPanel({
   const StatusIcon = statusConfig[status].icon;
 
   return (
-    <div className="w-[420px] h-full bg-white border-l border-gray-200 flex flex-col shadow-xl">
+    <div
+      className={`w-[420px] h-full border-l flex flex-col shadow-xl ${isMastered ? 'border-emerald-200' : 'border-gray-200'}`}
+      style={{
+        background: isMastered
+          ? 'linear-gradient(180deg, #ecfdf5 0%, #ffffff 20%, #f0fdf4 100%)'
+          : '#ffffff',
+      }}
+    >
       {/* Header */}
-      <div className="flex items-start justify-between p-5 border-b border-gray-100">
+      <div className={`flex items-start justify-between p-5 border-b ${isMastered ? 'border-emerald-200 bg-emerald-50/80' : 'border-gray-100'}`}>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             {node.subject && (
@@ -231,7 +239,7 @@ export function NodeDetailPanel({
 
           {/* Mastery Test Info */}
           {masteryTest && (
-            <div className="bg-gray-50 rounded-lg p-3">
+            <div className={isMastered ? 'bg-emerald-50 border border-emerald-200 rounded-lg p-3' : 'bg-gray-50 rounded-lg p-3'}>
               <h3 className="text-sm font-semibold text-gray-700 mb-1">Mastery Test</h3>
               <p className="text-xs text-gray-500 mb-2">
                 {masteryTest.questions?.length || 0} questions · Pass: {masteryTest.passing_score}%

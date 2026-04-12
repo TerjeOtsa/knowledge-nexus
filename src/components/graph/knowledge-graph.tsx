@@ -30,7 +30,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// Register custom node types
 const nodeTypes = {
   concept: ConceptNode,
   root: RootNode,
@@ -70,30 +69,29 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
 
   const { user } = useAuthStore();
 
-  // Compute radial layout positions and sector info
   const { positions: layoutPositions, sectors: subjectSectors } = useMemo(
     () => computeRadialLayout(knowledgeNodes, knowledgeEdges, subjects),
     [knowledgeNodes, knowledgeEdges, subjects]
   );
 
-  // Build React Flow nodes: root + subjects + concepts
   const rfNodes = useMemo(() => {
     const result: Node[] = [];
+    const hasSelection = selectedNodeId !== null;
+    const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+    const hasSearchQuery = normalizedSearchQuery.length > 0;
 
-    // --- Root node (330px → offset 165) ---
     const rootPos = layoutPositions.get('__root__');
     if (rootPos) {
       result.push({
         id: '__root__',
         type: 'root',
         position: { x: rootPos.x - 165, y: rootPos.y - 165 },
-        data: { label: 'Knowledge Nexus' },
+        data: { label: 'Knowledge Nexus', dimmed: hasSelection },
         selectable: false,
         draggable: false,
       });
     }
 
-    // --- Subject nodes (256px → offset 128) ---
     for (const subject of subjects) {
       const pos = layoutPositions.get(`__subject_${subject.id}`);
       if (!pos) continue;
@@ -109,38 +107,27 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
           color: subject.color,
           icon: subject.icon,
           nodeCount,
+          dimmed: hasSelection,
         },
         selectable: false,
         draggable: false,
       });
     }
 
-    // --- Concept nodes (filtered) ---
-    const filteredNodes = knowledgeNodes.filter((node) => {
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        if (
-          !node.title.toLowerCase().includes(query) &&
-          !node.topic?.toLowerCase().includes(query) &&
-          !node.description.toLowerCase().includes(query)
-        ) {
-          return false;
-        }
-      }
+    const visibleNodes = knowledgeNodes.filter((node) => {
       if (subjectFilter && node.subject_id !== subjectFilter) {
         return false;
       }
       return true;
     });
 
-    for (const node of filteredNodes) {
+    for (const node of visibleNodes) {
       const pos = layoutPositions.get(node.id);
       if (!pos) continue;
 
       const status: NodeStatus = userProgress[node.id]?.status || 'untouched';
       const subject = subjects.find((s) => s.id === node.subject_id);
 
-      // Find all unique subject colors this node connects to (cross-subject edges)
       const connectedSubjectColors = new Set<string>();
       if (subject?.color) connectedSubjectColors.add(subject.color);
 
@@ -157,10 +144,20 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
         }
       }
 
-      // Concept node sizes: small=120, notable=156, keystone=193
       const diff = node.difficulty || 1;
       const nodeSize = diff <= 2 ? 120 : diff <= 4 ? 156 : 193;
       const offset = nodeSize / 2;
+      const isSelected = node.id === selectedNodeId;
+      const isSearchMatch =
+        hasSearchQuery &&
+        (
+          node.title.toLowerCase().includes(normalizedSearchQuery) ||
+          node.topic?.toLowerCase().includes(normalizedSearchQuery) ||
+          node.description.toLowerCase().includes(normalizedSearchQuery)
+        );
+      const isDimmed = isSelected
+        ? false
+        : (hasSelection && node.id !== selectedNodeId) || (hasSearchQuery && !isSearchMatch);
 
       result.push({
         id: node.id,
@@ -174,45 +171,51 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
           topic: node.topic,
           nodeData: node,
           connectedSubjectColors: Array.from(connectedSubjectColors),
+          dimmed: isDimmed,
+          searchMatched: isSearchMatch,
+          searchActive: hasSearchQuery,
         },
-        selected: node.id === selectedNodeId,
+        selected: isSelected,
       });
     }
 
     return result;
   }, [knowledgeNodes, knowledgeEdges, subjects, layoutPositions, userProgress, searchQuery, subjectFilter, selectedNodeId]);
 
-  // Build React Flow edges with straight lines for spider-web look
   const rfEdges = useMemo<FlowEdge[]>(() => {
     const visibleNodeIds = new Set(rfNodes.map((n) => n.id));
+    const hasSelection = selectedNodeId !== null;
 
-    // --- Root → Subject edges (thin radial threads) ---
     const subjectEdges: FlowEdge[] = subjects.flatMap((s) => {
       if (!visibleNodeIds.has(`__subject_${s.id}`)) {
         return [];
       }
 
-        const subjectPos = layoutPositions.get(`__subject_${s.id}`);
-        const rootPos = layoutPositions.get('__root__');
-        if (!subjectPos || !rootPos) {
-          return [];
-        }
+      const subjectPos = layoutPositions.get(`__subject_${s.id}`);
+      const rootPos = layoutPositions.get('__root__');
+      if (!subjectPos || !rootPos) {
+        return [];
+      }
 
-        const { sourceHandle, targetHandle } = getRadialHandles(rootPos.x, rootPos.y, subjectPos.x, subjectPos.y);
+      const { sourceHandle, targetHandle } = getRadialHandles(rootPos.x, rootPos.y, subjectPos.x, subjectPos.y);
 
-        return [{
-          id: `root-to-${s.id}`,
-          source: '__root__',
-          target: `__subject_${s.id}`,
-          sourceHandle,
-          targetHandle,
-          type: 'straight',
-          style: { stroke: s.color, strokeWidth: 2, opacity: 0.4, filter: `drop-shadow(0 0 4px ${s.color}66)` },
-          animated: false,
-        }];
-      });
+      return [{
+        id: `root-to-${s.id}`,
+        source: '__root__',
+        target: `__subject_${s.id}`,
+        sourceHandle,
+        targetHandle,
+        type: 'straight',
+        style: {
+          stroke: s.color,
+          strokeWidth: hasSelection ? 1.8 : 2.6,
+          opacity: hasSelection ? 0.1 : 0.62,
+          filter: hasSelection ? '' : `drop-shadow(0 0 7px ${s.color}88)`,
+        },
+        animated: false,
+      }];
+    });
 
-    // --- Subject → first concept edges ---
     const subjectConceptEdges: FlowEdge[] = [];
     for (const subject of subjects) {
       const subjectPos = layoutPositions.get(`__subject_${subject.id}`);
@@ -232,11 +235,13 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
         if (!nodePos) continue;
 
         const { sourceHandle, targetHandle } = getRadialHandles(subjectPos.x, subjectPos.y, nodePos.x, nodePos.y);
-
-        // Distance-based fade for subject→concept edges too
         const sDist = Math.hypot(nodePos.x - subjectPos.x, nodePos.y - subjectPos.y);
         const sT = Math.min(1, Math.max(0, (sDist - 150) / 500));
         const sFade = 1 - sT * 0.7;
+        const shortEdgeBoost = 1 + (1 - sT) * 0.55;
+        const isSelectedEdge = selectedNodeId === node.id;
+        const baseSubjectEdgeWidth = 2.2 * (0.9 + 0.55 * sFade);
+        const baseSubjectEdgeOpacity = Math.min(0.82, 0.46 * sFade * shortEdgeBoost);
 
         subjectConceptEdges.push({
           id: `subject-${subject.id}-to-${node.id}`,
@@ -245,18 +250,25 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
           sourceHandle,
           targetHandle,
           type: 'straight',
-          style: { stroke: subject.color, strokeWidth: 1.5 * (0.7 + 0.3 * sFade), opacity: 0.35 * sFade, filter: sFade > 0.5 ? `drop-shadow(0 0 3px ${subject.color}44)` : '' },
+          style: {
+            stroke: subject.color,
+            strokeWidth: hasSelection && !isSelectedEdge
+              ? Math.max(0.9, baseSubjectEdgeWidth * 0.72)
+              : baseSubjectEdgeWidth,
+            opacity: hasSelection && !isSelectedEdge
+              ? Math.max(0.06, baseSubjectEdgeOpacity * 0.16)
+              : baseSubjectEdgeOpacity,
+            filter: hasSelection && !isSelectedEdge
+              ? ''
+              : sFade > 0.35 ? `drop-shadow(0 0 6px ${subject.color}77)` : '',
+          },
           animated: false,
         });
       }
     }
 
-    // --- Build a unified set of concept↔concept connections ---
-    // Merge edges from the edges table AND the prerequisites table,
-    // deduplicating so each pair appears at most once.
     const connectionMap = new Map<string, MergedConnection>();
 
-    // Add all DB edges
     for (const edge of knowledgeEdges) {
       const key = [edge.source_node_id, edge.target_node_id].sort().join('::');
       if (!connectionMap.has(key)) {
@@ -268,7 +280,6 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
       }
     }
 
-    // Add prerequisite connections (prerequisite_node → node = "leads to")
     for (const prereq of prerequisites) {
       const key = [prereq.prerequisite_node_id, prereq.node_id].sort().join('::');
       if (!connectionMap.has(key)) {
@@ -280,7 +291,6 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
       }
     }
 
-    // --- Convert merged connections to React Flow edges ---
     const conceptEdges: FlowEdge[] = Array.from(connectionMap.entries())
       .filter(([, conn]) => visibleNodeIds.has(conn.source) && visibleNodeIds.has(conn.target))
       .map(([key, conn]) => {
@@ -295,23 +305,22 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
           targetHandle = handles.targetHandle;
         }
 
-        // Color by subject — blend for cross-subject
         const sourceNode = knowledgeNodes.find((n) => n.id === conn.source);
         const targetNode = knowledgeNodes.find((n) => n.id === conn.target);
         const sourceSubject = subjects.find((s) => s.id === sourceNode?.subject_id);
         const targetSubject = subjects.find((s) => s.id === targetNode?.subject_id);
 
-        // --- Distance-based opacity: short edges bright, long edges fade ---
-        let dist = 300; // fallback
+        let dist = 300;
         if (sourcePos && targetPos) {
           dist = Math.hypot(targetPos.x - sourcePos.x, targetPos.y - sourcePos.y);
         }
-        // Short (<200px) = full opacity, long (>800px) = very faint
-        // Clamp t ∈ [0,1] where 0=close, 1=far
         const t = Math.min(1, Math.max(0, (dist - 150) / 650));
-        const distanceFade = 1 - t * 0.85; // range: 1.0 → 0.15
+        const distanceFade = 1 - t * 0.85;
 
-        let edgeColor = '#475569'; // default slate
+        const shortEdgeBoost = 1 + (1 - t) * 0.55;
+        const isSelectedEdge = selectedNodeId === conn.source || selectedNodeId === conn.target;
+
+        let edgeColor = '#475569';
         let baseWidth = 1;
         let baseOpacity = 0.4;
         let edgeFilter = '';
@@ -319,28 +328,33 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
         if (sourceSubject && targetSubject) {
           if (sourceSubject.id === targetSubject.id) {
             edgeColor = sourceSubject.color;
-            baseWidth = 1;
-            baseOpacity = 0.35;
-            edgeFilter = `drop-shadow(0 0 2px ${edgeColor}33)`;
+            baseWidth = 1.35;
+            baseOpacity = 0.5;
+            edgeFilter = `drop-shadow(0 0 4px ${edgeColor}55)`;
           } else {
-            // Cross-subject — blend colors
             const c1 = sourceSubject.color.replace('#', '');
             const c2 = targetSubject.color.replace('#', '');
             const r = Math.round((parseInt(c1.substring(0, 2), 16) + parseInt(c2.substring(0, 2), 16)) / 2);
             const g = Math.round((parseInt(c1.substring(2, 4), 16) + parseInt(c2.substring(2, 4), 16)) / 2);
             const b = Math.round((parseInt(c1.substring(4, 6), 16) + parseInt(c2.substring(4, 6), 16)) / 2);
             edgeColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-            baseWidth = 1.5;
-            baseOpacity = 0.45; // cross-subject slightly brighter
-            edgeFilter = `drop-shadow(0 0 3px ${edgeColor}55)`;
+            baseWidth = 1.85;
+            baseOpacity = 0.58;
+            edgeFilter = `drop-shadow(0 0 6px ${edgeColor}77)`;
           }
         }
 
-        // Apply distance scaling
-        const edgeOpacity = baseOpacity * distanceFade;
-        const edgeWidth = baseWidth * (0.6 + 0.4 * distanceFade); // thin out long edges slightly
-        // Disable glow filter on very faint edges to reduce noise
-        const finalFilter = distanceFade > 0.5 ? edgeFilter : '';
+        const baseEdgeOpacity = Math.min(0.96, baseOpacity * distanceFade * shortEdgeBoost);
+        const baseEdgeWidth = baseWidth * (0.95 + 1.0 * distanceFade);
+        const edgeOpacity = hasSelection && !isSelectedEdge
+          ? Math.max(0.08, baseEdgeOpacity * 0.18)
+          : baseEdgeOpacity;
+        const edgeWidth = hasSelection && !isSelectedEdge
+          ? Math.max(0.95, baseEdgeWidth * 0.72)
+          : baseEdgeWidth;
+        const finalFilter = hasSelection && !isSelectedEdge
+          ? ''
+          : distanceFade > 0.25 ? edgeFilter : '';
 
         return {
           id: `web-${key}`,
@@ -352,15 +366,19 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
           type: 'straight',
           animated: false,
           style: { stroke: edgeColor, strokeWidth: edgeWidth, opacity: edgeOpacity, filter: finalFilter },
-          labelStyle: { fontSize: 9, fill: '#94a3b8', fontWeight: 400 },
-          labelBgStyle: { fill: '#0f172a', fillOpacity: 0.9 },
+          labelStyle: {
+            fontSize: 9,
+            fill: hasSelection && !isSelectedEdge ? '#64748b' : '#cbd5e1',
+            fontWeight: 400,
+          },
+          labelBgStyle: { fill: '#0f172a', fillOpacity: hasSelection && !isSelectedEdge ? 0.35 : 0.9 },
           labelBgPadding: [3, 1] as [number, number],
           labelBgBorderRadius: 3,
         };
       });
 
     return [...subjectEdges, ...subjectConceptEdges, ...conceptEdges];
-  }, [knowledgeEdges, prerequisites, rfNodes, subjects, knowledgeNodes, layoutPositions, showEdgeLabels]);
+  }, [knowledgeEdges, prerequisites, rfNodes, subjects, knowledgeNodes, layoutPositions, showEdgeLabels, selectedNodeId]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(rfNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(rfEdges);
@@ -373,16 +391,13 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
     setEdges(rfEdges);
   }, [rfEdges, setEdges]);
 
-  // Handle node click (only for concept nodes)
   const handleNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {
-      // Ignore clicks on root and subject nodes
       if (node.id === '__root__' || node.id.startsWith('__subject_')) return;
 
       setSelectedNodeId(node.id);
       onNodeClick(node.id);
 
-      // Mark as in_progress if untouched
       if (user && (!userProgress[node.id] || userProgress[node.id].status === 'untouched')) {
         fetch('/api/progress', {
           method: 'POST',
@@ -394,7 +409,6 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
     [setSelectedNodeId, onNodeClick, user, userProgress]
   );
 
-  // Double-click on empty canvas → quick add node (in edit mode)
   const handlePaneDoubleClick = useCallback(
     () => {
       if (graphMode === 'edit') {
@@ -406,20 +420,7 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
 
   return (
     <div className="w-full h-full relative">
-      {/* Graph Toolbar */}
       <Panel position="top-left" className="flex flex-col gap-2 z-10">
-        {/* Search */}
-        <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-2">
-          <Search className="w-4 h-4 text-slate-500" />
-          <Input
-            placeholder="Search concepts..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-64 h-8 text-sm border-0 focus:ring-0 bg-transparent text-slate-200 placeholder:text-slate-500"
-          />
-        </div>
-
-        {/* Filters */}
         <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-2">
           <Filter className="w-4 h-4 text-slate-500" />
           <Select
@@ -445,9 +446,18 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
             </SelectContent>
           </Select>
         </div>
+
+        <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-2">
+          <Search className="w-4 h-4 text-slate-500" />
+          <Input
+            placeholder="Search nodes..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-64 h-8 text-sm border-0 focus:ring-0 bg-transparent text-slate-200 placeholder:text-slate-500"
+          />
+        </div>
       </Panel>
 
-      {/* Mode toggle & actions */}
       <Panel position="top-right" className="flex flex-col gap-2 z-10">
         <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-2">
           <Button
@@ -483,7 +493,6 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
           </div>
         )}
 
-        {/* Legend — PoE dark style */}
         <div className="bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-3 text-xs">
           <p className="font-medium text-slate-400 mb-2 tracking-wide uppercase text-[10px]">Node Status</p>
           <div className="flex flex-col gap-1.5">
@@ -503,21 +512,20 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
             <p className="font-medium text-slate-400 mb-1 tracking-wide uppercase text-[10px]">Node Size</p>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-slate-600" />
-              <span className="text-slate-500">Small — Basics</span>
+              <span className="text-slate-500">Small - Basics</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-md bg-slate-600" />
-              <span className="text-slate-500">Notable — Intermediate</span>
+              <span className="text-slate-500">Notable - Intermediate</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-4 h-4 rounded-md bg-slate-600" />
-              <span className="text-slate-500">Keystone — Advanced</span>
+              <span className="text-slate-500">Keystone - Advanced</span>
             </div>
           </div>
         </div>
       </Panel>
 
-      {/* React Flow Graph */}
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -554,7 +562,6 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
               return data?.color || '#6366f1';
             }
             const data = node.data as { subject?: { color: string }; status?: string };
-            // Tint by subject color for minimap
             return data?.subject?.color || '#60a5fa';
           }}
         />

@@ -6,25 +6,29 @@ import { Brain } from 'lucide-react';
 
 interface RootNodeData {
   label: string;
+  dimmed?: boolean;
   [key: string]: unknown;
 }
 
-/**
- * PoE Keystone-style root node — the center of the passive tree.
- * Dark core with dramatic multi-color glow.
- */
-function RootNodeComponent({ selected }: NodeProps & { data: RootNodeData }) {
+function RootNodeComponent({ data, selected }: NodeProps & { data: RootNodeData }) {
+  const isDimmed = Boolean(data.dimmed);
+
   return (
-    <div className="relative flex items-center justify-center w-82.5 h-82.5">
-      {/* Outermost glow ring */}
+    <div
+      className="relative flex items-center justify-center w-82.5 h-82.5"
+      style={{
+        opacity: isDimmed ? 0.28 : 1,
+        filter: isDimmed ? 'saturate(0.65) brightness(0.72)' : 'none',
+        transition: 'opacity 180ms ease, filter 180ms ease',
+      }}
+    >
       <div
         className="absolute w-82.5 h-82.5 rounded-full pointer-events-none"
         style={{
-          boxShadow: '0 0 80px 30px rgba(168, 85, 247, 0.3), 0 0 160px 60px rgba(99, 102, 241, 0.15)',
+          boxShadow: '0 0 96px 36px rgba(168, 85, 247, 0.45), 0 0 180px 72px rgba(99, 102, 241, 0.22)',
         }}
       />
 
-      {/* Slow rotating ring effect */}
       <div
         className="absolute w-90 h-90 rounded-full border-2 border-purple-400/20 animate-spin pointer-events-none"
         style={{ animationDuration: '20s' }}
@@ -34,16 +38,14 @@ function RootNodeComponent({ selected }: NodeProps & { data: RootNodeData }) {
         style={{ animationDuration: '30s', animationDirection: 'reverse' }}
       />
 
-      {/* Pulse ring */}
       <div
         className="absolute w-82.5 h-82.5 rounded-full animate-ping pointer-events-none"
         style={{
-          backgroundColor: 'rgba(168, 85, 247, 0.1)',
+          backgroundColor: 'rgba(168, 85, 247, 0.16)',
           animationDuration: '4s',
         }}
       />
 
-      {/* Main body */}
       <div
         className={`
           relative w-82.5 h-82.5 rounded-full
@@ -52,23 +54,22 @@ function RootNodeComponent({ selected }: NodeProps & { data: RootNodeData }) {
           ${selected ? 'scale-110' : 'hover:scale-105'}
         `}
         style={{
-          background: 'radial-gradient(ellipse at 35% 35%, rgba(168, 85, 247, 0.25), rgba(99, 102, 241, 0.15) 40%, #0a0e1a 75%)',
-          border: '4px solid rgba(168, 85, 247, 0.6)',
+          background: 'radial-gradient(ellipse at 35% 35%, rgba(168, 85, 247, 0.38), rgba(99, 102, 241, 0.24) 42%, #10182a 76%)',
+          border: '4px solid rgba(168, 85, 247, 0.82)',
           boxShadow: selected
-            ? '0 0 50px 20px rgba(168, 85, 247, 0.5), inset 0 0 40px rgba(168, 85, 247, 0.2)'
-            : 'inset 0 0 50px rgba(168, 85, 247, 0.15)',
+            ? '0 0 62px 24px rgba(168, 85, 247, 0.62), inset 0 0 46px rgba(168, 85, 247, 0.3)'
+            : '0 0 28px rgba(168, 85, 247, 0.24), inset 0 0 54px rgba(168, 85, 247, 0.22)',
         }}
       >
-        <Brain className="w-16 h-16 text-purple-300" style={{ filter: 'drop-shadow(0 0 12px rgba(168, 85, 247, 0.6))' }} />
+        <Brain className="w-16 h-16 text-fuchsia-100" style={{ filter: 'drop-shadow(0 0 16px rgba(168, 85, 247, 0.8))' }} />
         <span
-          className="text-lg font-bold text-purple-200 tracking-wider text-center leading-tight mt-2"
-          style={{ textShadow: '0 0 14px rgba(168, 85, 247, 0.5)' }}
+          className="text-lg font-bold text-white tracking-wider text-center leading-tight mt-2"
+          style={{ textShadow: '0 0 18px rgba(168, 85, 247, 0.7)' }}
         >
           Knowledge<br />Nexus
         </span>
       </div>
 
-      {/* Handles in all directions for radial connections */}
       <Handle type="source" position={Position.Top} id="top-src" className="w-1! h-1! bg-transparent! border-0! opacity-0!" />
       <Handle type="target" position={Position.Top} id="top-tgt" className="w-1! h-1! bg-transparent! border-0! opacity-0!" />
       <Handle type="source" position={Position.Bottom} id="bottom-src" className="w-1! h-1! bg-transparent! border-0! opacity-0!" />

@@ -81,7 +81,7 @@ function blendWedgePath(
  * pie-slice sectors for each subject. Uses the React Flow viewport
  * transform so the sectors move/zoom with the graph.
  */
-function SectorBackgroundComponent({ sectors, maxRadius = 2500, opacity = 0.07 }: SectorBackgroundProps) {
+function SectorBackgroundComponent({ sectors, maxRadius = 2500, opacity = 0.038 }: SectorBackgroundProps) {
   const { x, y, zoom } = useViewport();
 
   if (sectors.length === 0) return null;
@@ -99,7 +99,6 @@ function SectorBackgroundComponent({ sectors, maxRadius = 2500, opacity = 0.07 }
         <defs>
           {/* Radial gradient for each sector — fades out toward edges */}
           {sectors.map((sector) => {
-            const rgb = hexToRgb(sector.color);
             return (
               <radialGradient
                 key={`grad-${sector.subjectId}`}
@@ -169,27 +168,6 @@ function SectorBackgroundComponent({ sectors, maxRadius = 2500, opacity = 0.07 }
               />
             );
           })}
-
-        {/* Subtle sector boundary lines */}
-        {sectors.map((sector) => {
-          const x1 = cx + innerR * Math.cos(sector.startAngle);
-          const y1 = cy + innerR * Math.sin(sector.startAngle);
-          const x2 = cx + maxRadius * Math.cos(sector.startAngle);
-          const y2 = cy + maxRadius * Math.sin(sector.startAngle);
-          return (
-            <line
-              key={`line-${sector.subjectId}`}
-              x1={x1}
-              y1={y1}
-              x2={x2}
-              y2={y2}
-              stroke={sector.color}
-              strokeWidth={1}
-              strokeOpacity={0.08}
-              strokeDasharray="8 12"
-            />
-          );
-        })}
       </g>
     </svg>
   );

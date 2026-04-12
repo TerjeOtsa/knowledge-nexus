@@ -189,6 +189,7 @@ export function NodeWorkspace({
   const { node, outgoingEdges, incomingEdges, prerequisites, dependents, masteryTest } = details;
   const progress = userProgress[nodeId];
   const status = progress?.status || 'untouched';
+  const isMastered = status === 'mastered';
 
   const statusConfig = {
     untouched: { label: 'Not Started', color: 'bg-blue-100 text-blue-800', icon: BookOpen },
@@ -203,19 +204,28 @@ export function NodeWorkspace({
   ];
 
   return (
-    <div className="absolute inset-0 z-50 bg-white flex flex-col">
+    <div
+      className="absolute inset-0 z-50 flex flex-col"
+      style={{
+        background: isMastered
+          ? 'linear-gradient(180deg, #ecfdf5 0%, #ffffff 18%, #f0fdf4 100%)'
+          : '#ffffff',
+      }}
+    >
       {/* ===== HEADER ===== */}
-      <div className="border-b border-gray-200 bg-white">
+      <div className={isMastered ? 'border-b border-emerald-200 bg-emerald-50/80' : 'border-b border-gray-200 bg-white'}>
         <div className="flex items-center gap-3 px-6 py-4">
           <button
             onClick={onClose}
-            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+            className={`flex items-center gap-1.5 text-sm transition-colors ${
+              isMastered ? 'text-emerald-700 hover:text-emerald-900' : 'text-gray-500 hover:text-gray-800'
+            }`}
           >
             <ChevronLeft className="w-4 h-4" />
             Back to Graph
           </button>
 
-          <div className="h-5 w-px bg-gray-200" />
+          <div className={`h-5 w-px ${isMastered ? 'bg-emerald-200' : 'bg-gray-200'}`} />
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -263,7 +273,9 @@ export function NodeWorkspace({
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
                   isActive
-                    ? 'border-blue-600 text-blue-600'
+                    ? isMastered
+                      ? 'border-emerald-600 text-emerald-700 bg-emerald-50/60'
+                      : 'border-blue-600 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -282,9 +294,9 @@ export function NodeWorkspace({
           <ScrollArea className="h-full">
             <div className="max-w-3xl mx-auto p-8 space-y-8">
               {/* Description - the core learning content */}
-              <section>
+              <section className={isMastered ? 'bg-white/85 border border-emerald-200 rounded-xl p-5 shadow-sm shadow-emerald-100/70' : ''}>
                 <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-blue-600" />
+                  <BookOpen className={`w-5 h-5 ${isMastered ? 'text-emerald-600' : 'text-blue-600'}`} />
                   What is {node.title}?
                 </h2>
                 <div className="prose prose-sm prose-gray max-w-none">
@@ -296,12 +308,12 @@ export function NodeWorkspace({
 
               {/* Why It Matters */}
               {node.why_it_matters && (
-                <section className="bg-amber-50 border border-amber-200 rounded-xl p-5">
-                  <h2 className="text-lg font-semibold text-amber-900 mb-2 flex items-center gap-2">
-                    <Lightbulb className="w-5 h-5 text-amber-600" />
+                <section className={isMastered ? 'bg-emerald-50 border border-emerald-200 rounded-xl p-5' : 'bg-amber-50 border border-amber-200 rounded-xl p-5'}>
+                  <h2 className={`text-lg font-semibold mb-2 flex items-center gap-2 ${isMastered ? 'text-emerald-900' : 'text-amber-900'}`}>
+                    <Lightbulb className={`w-5 h-5 ${isMastered ? 'text-emerald-600' : 'text-amber-600'}`} />
                     Why It Matters
                   </h2>
-                  <p className="text-sm text-amber-800 leading-relaxed">{node.why_it_matters}</p>
+                  <p className={`text-sm leading-relaxed ${isMastered ? 'text-emerald-800' : 'text-amber-800'}`}>{node.why_it_matters}</p>
                 </section>
               )}
 
@@ -314,7 +326,7 @@ export function NodeWorkspace({
                   </h2>
                   <div className="grid gap-2">
                     {node.use_cases.map((uc, idx) => (
-                      <div key={idx} className="flex items-start gap-3 bg-gray-50 rounded-lg p-3">
+                      <div key={idx} className={`flex items-start gap-3 rounded-lg p-3 ${isMastered ? 'bg-emerald-50/80 border border-emerald-200' : 'bg-gray-50'}`}>
                         <span className="text-green-500 font-bold mt-0.5">→</span>
                         <span className="text-sm text-gray-700">{uc}</span>
                       </div>
@@ -327,7 +339,7 @@ export function NodeWorkspace({
               {prerequisites.length > 0 && (
                 <section>
                   <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <ArrowLeft className="w-5 h-5 text-purple-600" />
+                    <ArrowLeft className={`w-5 h-5 ${isMastered ? 'text-emerald-600' : 'text-purple-600'}`} />
                     Prerequisites — learn these first
                   </h2>
                   <div className="flex flex-wrap gap-2">
@@ -335,7 +347,11 @@ export function NodeWorkspace({
                       <button
                         key={idx}
                         onClick={() => p.prerequisite_node?.id && onNavigateToNode(p.prerequisite_node.id)}
-                        className="px-3 py-1.5 text-sm bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors border border-purple-200"
+                        className={`px-3 py-1.5 text-sm rounded-lg transition-colors border ${
+                          isMastered
+                            ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200'
+                            : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border-purple-200'
+                        }`}
                       >
                         {p.prerequisite_node?.title || 'Unknown'}
                       </button>
@@ -383,7 +399,7 @@ export function NodeWorkspace({
               )}
 
               {/* Difficulty info */}
-              <section className="bg-gray-50 rounded-xl p-5">
+              <section className={isMastered ? 'bg-emerald-50/80 border border-emerald-200 rounded-xl p-5' : 'bg-gray-50 rounded-xl p-5'}>
                 <div className="flex items-center gap-4 text-sm text-gray-600">
                   <div>
                     <span className="font-medium text-gray-900">Difficulty:</span>{' '}
@@ -394,7 +410,9 @@ export function NodeWorkspace({
                       <div
                         key={level}
                         className={`w-2 h-2 rounded-full ${
-                          level <= node.difficulty ? 'bg-blue-500' : 'bg-gray-300'
+                          level <= node.difficulty
+                            ? isMastered ? 'bg-green-500' : 'bg-blue-500'
+                            : 'bg-gray-300'
                         }`}
                       />
                     ))}
@@ -422,11 +440,11 @@ export function NodeWorkspace({
                 </div>
               ) : testPhase === 'idle' || testPhase === 'instructions' ? (
                 <div className="space-y-6">
-                  <div className="bg-blue-50 rounded-xl p-6 text-center">
-                    <GraduationCap className="w-12 h-12 text-blue-600 mx-auto mb-3" />
-                    <h3 className="text-xl font-bold text-blue-900">{masteryTest.title}</h3>
+                  <div className={isMastered ? 'bg-emerald-50 border border-emerald-200 rounded-xl p-6 text-center' : 'bg-blue-50 rounded-xl p-6 text-center'}>
+                    <GraduationCap className={`w-12 h-12 mx-auto mb-3 ${isMastered ? 'text-emerald-600' : 'text-blue-600'}`} />
+                    <h3 className={`text-xl font-bold ${isMastered ? 'text-emerald-900' : 'text-blue-900'}`}>{masteryTest.title}</h3>
                     {masteryTest.instructions && (
-                      <p className="text-sm text-blue-700 mt-2 max-w-md mx-auto">{masteryTest.instructions}</p>
+                      <p className={`text-sm mt-2 max-w-md mx-auto ${isMastered ? 'text-emerald-700' : 'text-blue-700'}`}>{masteryTest.instructions}</p>
                     )}
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -580,9 +598,9 @@ export function NodeWorkspace({
 
         {/* ---- NOTES TAB ---- */}
         {activeTab === 'notes' && (
-          <div className="h-full flex flex-col">
-            {/* Note toolbar */}
-            <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100 bg-gray-50/50">
+            <div className="h-full flex flex-col">
+              {/* Note toolbar */}
+              <div className={`flex items-center justify-between px-6 py-3 border-b ${isMastered ? 'border-emerald-200 bg-emerald-50/70' : 'border-gray-100 bg-gray-50/50'}`}>
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <StickyNote className="w-4 h-4" />
                 <span>Your notes for <strong className="text-gray-700">{node.title}</strong></span>
@@ -612,7 +630,7 @@ export function NodeWorkspace({
             </div>
 
             {/* Note editor */}
-            <div className="flex-1 p-6">
+            <div className={`flex-1 p-6 ${isMastered ? 'bg-emerald-50/30' : ''}`}>
               <textarea
                 value={noteContent}
                 onChange={(e) => handleNoteChange(e.target.value)}
