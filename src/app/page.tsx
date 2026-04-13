@@ -1,7 +1,8 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,7 +11,18 @@ import {
 } from 'lucide-react';
 
 export default function LandingPage() {
+  const router = useRouter();
   const { user, isLoading } = useAuthStore();
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      router.replace('/dashboard');
+    }
+  }, [isLoading, router, user]);
+
+  if (!isLoading && user) {
+    return <div className="min-h-screen bg-slate-50" />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -24,9 +36,9 @@ export default function LandingPage() {
           <div className="flex items-center gap-3">
             {!isLoading && (
               user ? (
-                <Link href="/graph">
+                <Link href="/dashboard">
                   <Button className="gap-1.5">
-                    Open Graph <ArrowRight className="w-4 h-4" />
+                    Continue Learning <ArrowRight className="w-4 h-4" />
                   </Button>
                 </Link>
               ) : (
@@ -62,15 +74,15 @@ export default function LandingPage() {
             track your progress, and prove mastery through targeted tests.
           </p>
           <div className="mt-8 flex items-center justify-center gap-4">
-            <Link href={user ? '/graph' : '/register'}>
+            <Link href={user ? '/dashboard' : '/register'}>
               <Button size="lg" className="gap-2 text-base px-8">
                 <Network className="w-5 h-5" />
-                {user ? 'Enter Graph' : 'Start Learning'}
+                {user ? 'Continue Learning' : 'Start Learning'}
               </Button>
             </Link>
-            <Link href={user ? '/dashboard' : '/login'}>
+            <Link href={user ? '/graph?view=list' : '/login'}>
               <Button variant="outline" size="lg" className="gap-2 text-base">
-                {user ? 'Dashboard' : 'Sign In'}
+                {user ? 'Open Lesson List' : 'Sign In'}
               </Button>
             </Link>
           </div>

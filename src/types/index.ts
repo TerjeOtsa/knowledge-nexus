@@ -240,6 +240,8 @@ export interface DashboardStats {
   subjects: SubjectProgress[];
   recent_activity: RecentActivity[];
   recommended_nodes: KnowledgeNode[];
+  continue_nodes: KnowledgeNode[];
+  review_nodes: KnowledgeNode[];
 }
 
 export interface SubjectProgress {

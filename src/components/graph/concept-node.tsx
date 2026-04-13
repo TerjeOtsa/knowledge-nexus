@@ -2,6 +2,8 @@
 
 import React, { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { Lock, Sparkles, RotateCcw } from 'lucide-react';
+import type { LearnerState } from '@/lib/learner-state';
 import type { NodeStatus, Subject, KnowledgeNode } from '@/types';
 import { getDifficultyLabel } from '@/lib/utils';
 
@@ -16,6 +18,8 @@ interface ConceptNodeData {
   dimmed?: boolean;
   searchMatched?: boolean;
   searchActive?: boolean;
+  learningState?: LearnerState;
+  prerequisiteSummary?: string;
   [key: string]: unknown;
 }
 
@@ -48,19 +52,34 @@ function ConceptNodeComponent({ data, selected }: NodeProps & { data: ConceptNod
   const isDimmed = Boolean(data.dimmed);
   const isSearchMatched = Boolean(data.searchMatched);
   const isSearchActive = Boolean(data.searchActive);
+  const learningState = data.learningState || 'ready';
+  const isLocked = learningState === 'locked';
+  const isReady = learningState === 'ready';
+  const isReviewDue = learningState === 'review';
 
   const isMastered = data.status === 'mastered';
   const isInProgress = data.status === 'in_progress';
   const baseGlowColor = isMultiSubject ? blendColors(connectedColors) : subjectColor;
   const masteryGlowColor = '#22c55e';
-  const glowColor = isMastered ? masteryGlowColor : baseGlowColor;
+  const readyGlowColor = '#38bdf8';
+  const reviewGlowColor = '#f59e0b';
+  const lockedGlowColor = '#64748b';
+  const glowColor = isLocked
+    ? lockedGlowColor
+    : isReviewDue
+      ? reviewGlowColor
+      : isMastered
+        ? masteryGlowColor
+        : isReady
+          ? readyGlowColor
+          : baseGlowColor;
   const fillColor = isMastered ? blendColors([baseGlowColor, masteryGlowColor]) : glowColor;
   const searchGlowColor = '#fef08a';
 
   const sizeClasses = {
-    small: 'w-[120px] h-[120px]',
-    notable: 'w-[156px] h-[156px]',
-    keystone: 'w-[193px] h-[193px]',
+    small: 'w-[180px] h-[180px]',
+    notable: 'w-[240px] h-[240px]',
+    keystone: 'w-[300px] h-[300px]',
   };
 
   const borderWidth = tier === 'keystone' ? 4 : tier === 'notable' ? 3.5 : 3;
@@ -74,19 +93,19 @@ function ConceptNodeComponent({ data, selected }: NodeProps & { data: ConceptNod
     keystone: 'rounded-lg',
   };
 
-  const textSize = tier === 'keystone' ? 'text-[15px]' : tier === 'notable' ? 'text-[14px]' : 'text-[12px]';
+  const textSize = tier === 'keystone' ? 'text-[33px]' : tier === 'notable' ? 'text-[27px]' : 'text-[23px]';
 
   return (
     <div
-      className="relative flex items-center justify-center"
+      className={`relative flex items-center justify-center bg-slate-950 ${shapeClass[tier]}`}
       title={getDifficultyLabel(data.difficulty)}
       style={{
-        opacity: isDimmed ? (isSearchActive ? 0.16 : 0.28) : 1,
+        opacity: isDimmed ? (isSearchActive ? 0.16 : 0.28) : isLocked ? 0.78 : 1,
         filter: isDimmed
           ? isSearchActive
             ? 'saturate(0.45) brightness(0.54)'
             : 'saturate(0.65) brightness(0.72)'
-          : 'none',
+          : isLocked ? 'saturate(0.7)' : 'none',
         transition: 'opacity 180ms ease, filter 180ms ease',
       }}
     >
@@ -131,6 +150,16 @@ function ConceptNodeComponent({ data, selected }: NodeProps & { data: ConceptNod
         />
       )}
 
+      {isReady && !isInProgress && !isMastered && (
+        <div
+          className={`absolute ${sizeClasses[tier]} ${shapeClass[tier]} pointer-events-none`}
+          style={{
+            border: `2px solid ${readyGlowColor}66`,
+            boxShadow: `0 0 18px 4px ${readyGlowColor}2b`,
+          }}
+        />
+      )}
+
       <div
         className={`
           relative ${sizeClasses[tier]} ${shapeClass[tier]}
@@ -140,7 +169,7 @@ function ConceptNodeComponent({ data, selected }: NodeProps & { data: ConceptNod
         `}
         style={{
           background: `radial-gradient(ellipse at 30% 28%, ${fillColor}${Math.round((bgOpacity + 0.08) * 255).toString(16).padStart(2, '0')}, ${glowColor}22 42%, #10182a 78%)`,
-          border: `${borderWidth}px solid ${(isSearchMatched ? searchGlowColor : glowColor)}${Math.round((isMastered ? 0.95 : isInProgress ? 0.72 : isSearchMatched ? 0.8 : 0.45) * 255).toString(16).padStart(2, '0')}`,
+          border: `${borderWidth}px ${isLocked ? 'dashed' : 'solid'} ${(isSearchMatched ? searchGlowColor : glowColor)}${Math.round((isMastered ? 0.95 : isInProgress ? 0.72 : isSearchMatched ? 0.8 : isLocked ? 0.7 : 0.45) * 255).toString(16).padStart(2, '0')}`,
           boxShadow: selected
             ? `0 0 26px 10px ${(isSearchMatched ? searchGlowColor : glowColor)}aa, inset 0 0 18px ${glowColor}55`
             : isSearchMatched
@@ -149,14 +178,42 @@ function ConceptNodeComponent({ data, selected }: NodeProps & { data: ConceptNod
         }}
       >
         {isMultiSubject && (
-          <div className="absolute -top-2 flex gap-1">
+          <div className="absolute -top-3 flex gap-2">
             {connectedColors.slice(0, 4).map((color, idx) => (
               <div
                 key={idx}
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: color, boxShadow: `0 0 4px ${color}` }}
+                className="w-4 h-4 rounded-full"
+                style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}` }}
               />
             ))}
+          </div>
+        )}
+
+        {isLocked && (
+          <div
+            className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center"
+            style={{
+              backgroundColor: '#0f172a',
+              border: `1px solid ${lockedGlowColor}aa`,
+              boxShadow: `0 0 10px ${lockedGlowColor}55`,
+            }}
+            title={data.prerequisiteSummary || 'Complete prerequisites first'}
+          >
+            <Lock className="w-4 h-4 text-slate-300" />
+          </div>
+        )}
+
+        {isReviewDue && (
+          <div
+            className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center"
+            style={{
+              backgroundColor: '#111827',
+              border: `1px solid ${reviewGlowColor}bb`,
+              boxShadow: `0 0 12px ${reviewGlowColor}55`,
+            }}
+            title="Review due"
+          >
+            <RotateCcw className="w-4 h-4 text-amber-300" />
           </div>
         )}
 
@@ -177,19 +234,34 @@ function ConceptNodeComponent({ data, selected }: NodeProps & { data: ConceptNod
         </span>
 
         {tier !== 'small' && (
-          <div className="flex items-center gap-1 mt-1">
+          <div className="flex items-center gap-2 mt-2">
             {Array.from({ length: 5 }, (_, i) => (
               <div
                 key={i}
                 className="rounded-full"
                 style={{
-                  width: tier === 'keystone' ? 6 : 5,
-                  height: tier === 'keystone' ? 6 : 5,
+                  width: tier === 'keystone' ? 12 : 10,
+                  height: tier === 'keystone' ? 12 : 10,
                   backgroundColor: i < data.difficulty ? glowColor : `${glowColor}33`,
-                  boxShadow: i < data.difficulty ? `0 0 3px ${glowColor}` : 'none',
+                  boxShadow: i < data.difficulty ? `0 0 6px ${glowColor}` : 'none',
                 }}
               />
             ))}
+          </div>
+        )}
+
+        {isReady && !isInProgress && !isMastered && !isLocked && (
+          <div
+            className="absolute -bottom-2 -left-2 px-2 py-1 rounded-full flex items-center gap-1 text-[10px] font-semibold tracking-wide"
+            style={{
+              backgroundColor: '#0c4a6e',
+              color: '#e0f2fe',
+              border: '1px solid rgba(56,189,248,0.65)',
+              boxShadow: '0 0 12px rgba(56,189,248,0.35)',
+            }}
+          >
+            <Sparkles className="w-3 h-3" />
+            Ready
           </div>
         )}
 
@@ -208,14 +280,8 @@ function ConceptNodeComponent({ data, selected }: NodeProps & { data: ConceptNod
         )}
       </div>
 
-      <Handle type="source" position={Position.Top} id="top-src" className="w-1! h-1! bg-transparent! border-0! opacity-0!" />
-      <Handle type="target" position={Position.Top} id="top-tgt" className="w-1! h-1! bg-transparent! border-0! opacity-0!" />
-      <Handle type="source" position={Position.Bottom} id="bottom-src" className="w-1! h-1! bg-transparent! border-0! opacity-0!" />
-      <Handle type="target" position={Position.Bottom} id="bottom-tgt" className="w-1! h-1! bg-transparent! border-0! opacity-0!" />
-      <Handle type="source" position={Position.Left} id="left-src" className="w-1! h-1! bg-transparent! border-0! opacity-0!" />
-      <Handle type="target" position={Position.Left} id="left-tgt" className="w-1! h-1! bg-transparent! border-0! opacity-0!" />
-      <Handle type="source" position={Position.Right} id="right-src" className="w-1! h-1! bg-transparent! border-0! opacity-0!" />
-      <Handle type="target" position={Position.Right} id="right-tgt" className="w-1! h-1! bg-transparent! border-0! opacity-0!" />
+      <Handle type="source" position={Position.Top} id="center-src" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 1, height: 1, opacity: 0, border: 'none', background: 'transparent' }} />
+      <Handle type="target" position={Position.Top} id="center-tgt" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 1, height: 1, opacity: 0, border: 'none', background: 'transparent' }} />
     </div>
   );
 }

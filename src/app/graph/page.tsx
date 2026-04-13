@@ -1,19 +1,22 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { Suspense, useEffect, useState, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore, useGraphStore } from '@/store';
 import { Navbar } from '@/components/layout/navbar';
 import { KnowledgeGraph } from '@/components/graph/knowledge-graph';
+import { ConceptListView } from '@/components/graph/concept-list-view';
 import { NodeWorkspace } from '@/components/graph/node-workspace';
 import { AddNodeModal } from '@/components/modals/add-node-modal';
 import { LinkNodeModal } from '@/components/modals/link-node-modal';
 import { MasteryTestModal } from '@/components/modals/mastery-test-modal';
 import { EditNodeModal } from '@/components/modals/edit-node-modal';
-import { Loader2 } from 'lucide-react';
+import { LayoutList, Loader2, Network } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-export default function GraphPage() {
+function GraphPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isLoading: authLoading } = useAuthStore();
   const {
     selectedNodeId,
@@ -27,6 +30,7 @@ export default function GraphPage() {
   } = useGraphStore();
 
   const [dataLoading, setDataLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'graph' | 'list'>('graph');
 
   // Modal state
   const [addNodeOpen, setAddNodeOpen] = useState(false);
@@ -80,6 +84,31 @@ export default function GraphPage() {
       fetchData();
     }
   }, [user, fetchData]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setViewMode('list');
+    }
+  }, []);
+
+  useEffect(() => {
+    const requestedView = searchParams.get('view');
+    if (requestedView === 'graph' || requestedView === 'list') {
+      setViewMode(requestedView);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const requestedNodeId = searchParams.get('node');
+    if (!requestedNodeId) {
+      setSelectedNodeId(null);
+      return;
+    }
+
+    if (nodes.some((node) => node.id === requestedNodeId)) {
+      setSelectedNodeId(requestedNodeId);
+    }
+  }, [nodes, searchParams, setSelectedNodeId]);
 
   // Modal handlers
   const handleAddNode = useCallback((fromNodeId?: string) => {
@@ -157,28 +186,54 @@ export default function GraphPage() {
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Navbar />
 
-      <div className="flex-1 flex relative overflow-hidden">
-        {/* Main graph area */}
-        <div className="flex-1">
-          <KnowledgeGraph
-            onNodeClick={(nodeId: string) => setSelectedNodeId(nodeId)}
-            onAddNode={handleAddNode}
-            onLinkNodes={handleLinkNode}
-          />
+      <div className="flex min-h-0 flex-1 flex-col pt-14">
+        <div className="border-b border-slate-200 bg-white/90 px-4 py-4 backdrop-blur sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-950">Learn</h1>
+              <p className="text-sm text-slate-600">
+                Explore the full map or switch to list view for a simpler topic-first learning flow.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button variant={viewMode === 'list' ? 'default' : 'outline'} onClick={() => setViewMode('list')}>
+                <LayoutList className="w-4 h-4" />
+                List View
+              </Button>
+              <Button variant={viewMode === 'graph' ? 'default' : 'outline'} onClick={() => setViewMode('graph')}>
+                <Network className="w-4 h-4" />
+                Map View
+              </Button>
+            </div>
+          </div>
         </div>
 
-        {/* Full-page Node Workspace (slides over graph) */}
-        {selectedNode && (
-          <NodeWorkspace
-            nodeId={selectedNode.id}
-            onClose={() => setSelectedNodeId(null)}
-            onStartTest={handleTakeTest}
-            onAddConnectedNode={handleAddNode}
-            onLinkExistingNode={handleLinkNode}
-            onEditNode={handleEditNode}
-            onNavigateToNode={handleNavigateToNode}
-          />
-        )}
+        <div className="relative flex-1 overflow-hidden">
+          <div className="absolute inset-0">
+            {viewMode === 'graph' ? (
+              <KnowledgeGraph
+                onNodeClick={(nodeId: string) => setSelectedNodeId(nodeId)}
+                onAddNode={handleAddNode}
+                onLinkNodes={handleLinkNode}
+              />
+            ) : (
+              <ConceptListView onNodeClick={(nodeId: string) => setSelectedNodeId(nodeId)} />
+            )}
+          </div>
+
+          {selectedNode && (
+            <NodeWorkspace
+              nodeId={selectedNode.id}
+              onClose={() => setSelectedNodeId(null)}
+              onStartTest={handleTakeTest}
+              onAddConnectedNode={handleAddNode}
+              onLinkExistingNode={handleLinkNode}
+              onEditNode={handleEditNode}
+              onNavigateToNode={handleNavigateToNode}
+            />
+          )}
+        </div>
       </div>
 
       {/* Modals */}
@@ -210,5 +265,19 @@ export default function GraphPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function GraphPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        </div>
+      }
+    >
+      <GraphPageContent />
+    </Suspense>
   );
 }

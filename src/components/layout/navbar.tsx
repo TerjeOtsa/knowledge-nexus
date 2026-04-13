@@ -25,9 +25,9 @@ export function Navbar() {
   };
 
   const navItems = [
-    { href: '/graph', label: 'Graph', icon: Network },
+    { href: '/dashboard', label: 'Learn', icon: LayoutDashboard },
+    { href: '/graph', label: 'Map', icon: Network },
     { href: '/notes', label: 'Notes', icon: FileText },
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   ];
 
   return (

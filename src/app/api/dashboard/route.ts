@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase';
 import { getSession } from '@/lib/auth';
+import { getNodeLearningMeta } from '@/lib/learner-state';
+import type { UserNodeProgress } from '@/types';
 
 /**
  * GET /api/dashboard - Get dashboard stats for the current user
@@ -55,7 +57,7 @@ export async function GET() {
     const prereqsList = prerequisites || [];
 
     // Build progress map
-    const progressMap: Record<string, typeof progressList[0]> = {};
+    const progressMap: Record<string, UserNodeProgress> = {};
     progressList.forEach((p) => {
       progressMap[p.node_id] = p;
     });
@@ -117,6 +119,21 @@ export async function GET() {
       return nodePrereqs.every((p) => masteredNodeIds.has(p.prerequisite_node_id));
     }).slice(0, 5);
 
+    const continueNodes = nodes
+      .filter((node) => progressMap[node.id]?.status === 'in_progress')
+      .sort((a, b) => {
+        const aProgress = progressMap[a.id];
+        const bProgress = progressMap[b.id];
+        const aTime = aProgress?.first_interacted_at ? new Date(aProgress.first_interacted_at).getTime() : 0;
+        const bTime = bProgress?.first_interacted_at ? new Date(bProgress.first_interacted_at).getTime() : 0;
+        return bTime - aTime;
+      })
+      .slice(0, 5);
+
+    const reviewNodes = nodes
+      .filter((node) => getNodeLearningMeta(node, prereqsList, progressMap).learnerState === 'review')
+      .slice(0, 5);
+
     return NextResponse.json({
       stats: {
         total_nodes: totalNodes,
@@ -127,6 +144,8 @@ export async function GET() {
         subjects: subjectProgress,
         recent_activity: recentActivity,
         recommended_nodes: recommendedNodes,
+        continue_nodes: continueNodes,
+        review_nodes: reviewNodes,
       },
     });
   } catch (error) {

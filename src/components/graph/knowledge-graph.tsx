@@ -1,45 +1,70 @@
 "use client";
 
-import React, { useCallback, useMemo, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ReactFlow,
-  Controls,
-  MiniMap,
   Background,
   BackgroundVariant,
-  useNodesState,
-  useEdgesState,
-  type Node,
-  type Edge as FlowEdge,
-  type NodeMouseHandler,
   ConnectionMode,
+  Controls,
+  MiniMap,
   Panel,
+  ReactFlow,
+  useEdgesState,
+  useNodesState,
+  type Edge as FlowEdge,
+  type Node,
+  type NodeChange,
+  type NodeMouseHandler,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { ConceptNode } from './concept-node';
-import { RootNode } from './root-node';
-import { SubjectNode } from './subject-node';
-import { SectorBackground } from './sector-background';
-import { useGraphStore, useAuthStore } from '@/store';
-import { getRelationshipLabel } from '@/lib/utils';
-import { computeRadialLayout, getRadialHandles } from '@/lib/radial-layout';
-import type { NodeStatus, RelationshipType } from '@/types';
-import { Search, Filter, Tags, Plus, Link2 } from 'lucide-react';
+import { Search, Filter, Tags, Plus, Link2, LayoutGrid, Layers3, Lock, Sparkles, RotateCcw, Sun, Network } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuthStore, useGraphStore } from '@/store';
+import { getRelationshipLabel } from '@/lib/utils';
+import { estimateStudyMinutes, getNodeLearningMeta, getTopicKey, getTopicLabel } from '@/lib/learner-state';
+import { buildTopicNodeId, computeRadialLayout, computeSolarLayout } from '@/lib/radial-layout';
+import type { NodeStatus, RelationshipType } from '@/types';
+import { ConceptNode } from './concept-node';
+import { RootNode } from './root-node';
+import { SectorBackground } from './sector-background';
+import { SubjectNode } from './subject-node';
+import { TopicNode } from './topic-node';
+
+const POSITIONS_KEY = 'kn-node-positions';
+
+function loadSavedPositions(): Record<string, { x: number; y: number }> {
+  if (typeof window === 'undefined') return {};
+  try { return JSON.parse(localStorage.getItem(POSITIONS_KEY) ?? '{}'); } catch { return {}; }
+}
+
+function persistPositions(pos: Record<string, { x: number; y: number }>) {
+  try { localStorage.setItem(POSITIONS_KEY, JSON.stringify(pos)); } catch { /* ignore */ }
+}
 
 const nodeTypes = {
   concept: ConceptNode,
   root: RootNode,
   subject: SubjectNode,
+  topic: TopicNode,
 };
 
 interface MergedConnection {
   source: string;
   target: string;
   type: RelationshipType;
+}
+
+interface TopicCluster {
+  id: string;
+  label: string;
+  subjectId: string;
+  color: string;
+  nodeIds: string[];
+  nodeCount: number;
+  minDifficulty: number;
 }
 
 interface KnowledgeGraphProps {
@@ -69,64 +94,157 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
 
   const { user } = useAuthStore();
 
-  const { positions: layoutPositions, sectors: subjectSectors } = useMemo(
-    () => computeRadialLayout(knowledgeNodes, knowledgeEdges, subjects),
-    [knowledgeNodes, knowledgeEdges, subjects]
+  const savedPositionsRef = useRef<Record<string, { x: number; y: number }>>(loadSavedPositions());
+  const isAnimatingRef = useRef(false);
+  const animationRef = useRef<number | null>(null);
+  const [layoutPreset, setLayoutPreset] = useState<'radial' | 'solar'>('radial');
+
+  const { positions: layoutPositions, sectors: subjectSectors, maxRadius: layoutMaxRadius } = useMemo(
+    () => layoutPreset === 'solar'
+      ? computeSolarLayout(knowledgeNodes, knowledgeEdges, subjects)
+      : computeRadialLayout(knowledgeNodes, knowledgeEdges, subjects),
+    [knowledgeNodes, knowledgeEdges, subjects, layoutPreset]
   );
+
+  const visibleNodes = useMemo(
+    () => knowledgeNodes.filter((node) => !subjectFilter || node.subject_id === subjectFilter),
+    [knowledgeNodes, subjectFilter]
+  );
+
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+  const hasSearchQuery = normalizedSearchQuery.length > 0;
+
+  const searchMatchedNodeIds = useMemo(() => {
+    if (!hasSearchQuery) {
+      return new Set<string>();
+    }
+
+    return new Set(
+      visibleNodes
+        .filter((node) =>
+          node.title.toLowerCase().includes(normalizedSearchQuery) ||
+          getTopicLabel(node.topic).toLowerCase().includes(normalizedSearchQuery) ||
+          node.description.toLowerCase().includes(normalizedSearchQuery)
+        )
+        .map((node) => node.id)
+    );
+  }, [visibleNodes, hasSearchQuery, normalizedSearchQuery]);
+
+  const topicClusters = useMemo<TopicCluster[]>(() => {
+    const clusters = new Map<string, TopicCluster>();
+
+    for (const node of visibleNodes) {
+      if (!node.subject_id) {
+        continue;
+      }
+
+      const subject = subjects.find((entry) => entry.id === node.subject_id);
+      if (!subject) {
+        continue;
+      }
+
+      const topicLabel = getTopicLabel(node.topic);
+      const clusterKey = getTopicKey(subject.id, topicLabel);
+      const clusterId = buildTopicNodeId(subject.id, topicLabel);
+
+      if (!clusters.has(clusterKey)) {
+        clusters.set(clusterKey, {
+          id: clusterId,
+          label: topicLabel,
+          subjectId: subject.id,
+          color: subject.color,
+          nodeIds: [],
+          nodeCount: 0,
+          minDifficulty: node.difficulty,
+        });
+      }
+
+      const cluster = clusters.get(clusterKey)!;
+      cluster.nodeIds.push(node.id);
+      cluster.nodeCount += 1;
+      cluster.minDifficulty = Math.min(cluster.minDifficulty, node.difficulty);
+    }
+
+    return Array.from(clusters.values()).sort((a, b) => {
+      if (a.subjectId !== b.subjectId) {
+        return a.subjectId.localeCompare(b.subjectId);
+      }
+      if (a.minDifficulty !== b.minDifficulty) {
+        return a.minDifficulty - b.minDifficulty;
+      }
+      return a.label.localeCompare(b.label);
+    });
+  }, [visibleNodes, subjects]);
 
   const rfNodes = useMemo(() => {
     const result: Node[] = [];
     const hasSelection = selectedNodeId !== null;
-    const normalizedSearchQuery = searchQuery.trim().toLowerCase();
-    const hasSearchQuery = normalizedSearchQuery.length > 0;
 
     const rootPos = layoutPositions.get('__root__');
     if (rootPos) {
       result.push({
         id: '__root__',
         type: 'root',
-        position: { x: rootPos.x - 165, y: rootPos.y - 165 },
+        position: savedPositionsRef.current['__root__'] ?? { x: rootPos.x - 198, y: rootPos.y - 198 },
         data: { label: 'Knowledge Nexus', dimmed: hasSelection },
         selectable: false,
-        draggable: false,
       });
     }
 
     for (const subject of subjects) {
       const pos = layoutPositions.get(`__subject_${subject.id}`);
-      if (!pos) continue;
+      const nodeCount = visibleNodes.filter((node) => node.subject_id === subject.id).length;
+      if (!pos || nodeCount === 0) continue;
 
-      const nodeCount = knowledgeNodes.filter((n) => n.subject_id === subject.id).length;
+      const subjectHasSearchMatch = !hasSearchQuery ||
+        visibleNodes.some((node) => node.subject_id === subject.id && searchMatchedNodeIds.has(node.id));
 
       result.push({
         id: `__subject_${subject.id}`,
         type: 'subject',
-        position: { x: pos.x - 128, y: pos.y - 128 },
+        position: savedPositionsRef.current[`__subject_${subject.id}`] ?? { x: pos.x - 154, y: pos.y - 154 },
         data: {
           label: subject.name,
           color: subject.color,
           icon: subject.icon,
           nodeCount,
-          dimmed: hasSelection,
+          dimmed: hasSelection || !subjectHasSearchMatch,
+          solar: layoutPreset === 'solar',
+          orbitPeriod: 12 + (subjects.indexOf(subject) * 7) % 16,
         },
         selectable: false,
-        draggable: false,
       });
     }
 
-    const visibleNodes = knowledgeNodes.filter((node) => {
-      if (subjectFilter && node.subject_id !== subjectFilter) {
-        return false;
-      }
-      return true;
-    });
+    for (const cluster of topicClusters) {
+      const pos = layoutPositions.get(cluster.id);
+      if (!pos) continue;
+
+      const topicHasSearchMatch = !hasSearchQuery ||
+        cluster.label.toLowerCase().includes(normalizedSearchQuery) ||
+        cluster.nodeIds.some((id) => searchMatchedNodeIds.has(id));
+
+      result.push({
+        id: cluster.id,
+        type: 'topic',
+        position: savedPositionsRef.current[cluster.id] ?? { x: pos.x - 106, y: pos.y - 106 },
+        data: {
+          label: cluster.label,
+          color: cluster.color,
+          nodeCount: cluster.nodeCount,
+          dimmed: hasSelection || !topicHasSearchMatch,
+        },
+        selectable: false,
+      });
+    }
 
     for (const node of visibleNodes) {
       const pos = layoutPositions.get(node.id);
       if (!pos) continue;
 
       const status: NodeStatus = userProgress[node.id]?.status || 'untouched';
-      const subject = subjects.find((s) => s.id === node.subject_id);
+      const subject = subjects.find((entry) => entry.id === node.subject_id);
+      const learningMeta = getNodeLearningMeta(node, prerequisites, userProgress);
 
       const connectedSubjectColors = new Set<string>();
       if (subject?.color) connectedSubjectColors.add(subject.color);
@@ -137,24 +255,18 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
         else if (edge.target_node_id === node.id) otherNodeId = edge.source_node_id;
         if (!otherNodeId) continue;
 
-        const otherNode = knowledgeNodes.find((n) => n.id === otherNodeId);
+        const otherNode = knowledgeNodes.find((entry) => entry.id === otherNodeId);
         if (otherNode && otherNode.subject_id !== node.subject_id) {
-          const otherSubject = subjects.find((s) => s.id === otherNode.subject_id);
+          const otherSubject = subjects.find((entry) => entry.id === otherNode.subject_id);
           if (otherSubject?.color) connectedSubjectColors.add(otherSubject.color);
         }
       }
 
       const diff = node.difficulty || 1;
-      const nodeSize = diff <= 2 ? 120 : diff <= 4 ? 156 : 193;
+      const nodeSize = diff <= 2 ? 180 : diff <= 4 ? 240 : 300;
       const offset = nodeSize / 2;
       const isSelected = node.id === selectedNodeId;
-      const isSearchMatch =
-        hasSearchQuery &&
-        (
-          node.title.toLowerCase().includes(normalizedSearchQuery) ||
-          node.topic?.toLowerCase().includes(normalizedSearchQuery) ||
-          node.description.toLowerCase().includes(normalizedSearchQuery)
-        );
+      const isSearchMatch = hasSearchQuery && searchMatchedNodeIds.has(node.id);
       const isDimmed = isSelected
         ? false
         : (hasSelection && node.id !== selectedNodeId) || (hasSearchQuery && !isSearchMatch);
@@ -162,7 +274,7 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
       result.push({
         id: node.id,
         type: 'concept',
-        position: { x: pos.x - offset, y: pos.y - offset },
+        position: savedPositionsRef.current[node.id] ?? { x: pos.x - offset, y: pos.y - offset },
         data: {
           label: node.title,
           subject,
@@ -174,98 +286,115 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
           dimmed: isDimmed,
           searchMatched: isSearchMatch,
           searchActive: hasSearchQuery,
+          learningState: learningMeta.learnerState,
+          prerequisiteSummary: learningMeta.isLocked
+            ? `${learningMeta.masteredPrerequisiteIds.length}/${learningMeta.prerequisiteIds.length} prerequisites mastered`
+            : undefined,
+          estimatedMinutes: estimateStudyMinutes(node.difficulty),
         },
         selected: isSelected,
       });
     }
 
     return result;
-  }, [knowledgeNodes, knowledgeEdges, subjects, layoutPositions, userProgress, searchQuery, subjectFilter, selectedNodeId]);
+  }, [
+    knowledgeEdges,
+    knowledgeNodes,
+    layoutPositions,
+    layoutPreset,
+    normalizedSearchQuery,
+    prerequisites,
+    searchMatchedNodeIds,
+    selectedNodeId,
+    subjects,
+    topicClusters,
+    userProgress,
+    visibleNodes,
+    hasSearchQuery,
+  ]);
 
   const rfEdges = useMemo<FlowEdge[]>(() => {
-    const visibleNodeIds = new Set(rfNodes.map((n) => n.id));
+    const visibleNodeIds = new Set(rfNodes.map((node) => node.id));
     const hasSelection = selectedNodeId !== null;
 
-    const subjectEdges: FlowEdge[] = subjects.flatMap((s) => {
-      if (!visibleNodeIds.has(`__subject_${s.id}`)) {
+    const subjectEdges: FlowEdge[] = subjects.flatMap((subject) => {
+      if (!visibleNodeIds.has(`__subject_${subject.id}`)) {
         return [];
       }
-
-      const subjectPos = layoutPositions.get(`__subject_${s.id}`);
-      const rootPos = layoutPositions.get('__root__');
-      if (!subjectPos || !rootPos) {
-        return [];
-      }
-
-      const { sourceHandle, targetHandle } = getRadialHandles(rootPos.x, rootPos.y, subjectPos.x, subjectPos.y);
 
       return [{
-        id: `root-to-${s.id}`,
+        id: `root-to-${subject.id}`,
         source: '__root__',
-        target: `__subject_${s.id}`,
-        sourceHandle,
-        targetHandle,
+        target: `__subject_${subject.id}`,
+        sourceHandle: 'center-src',
+        targetHandle: 'center-tgt',
         type: 'straight',
         style: {
-          stroke: s.color,
-          strokeWidth: hasSelection ? 1.8 : 2.6,
+          stroke: subject.color,
+          strokeWidth: hasSelection ? 1.8 : 2.8,
           opacity: hasSelection ? 0.1 : 0.62,
-          filter: hasSelection ? '' : `drop-shadow(0 0 7px ${s.color}88)`,
+          filter: hasSelection ? '' : `drop-shadow(0 0 7px ${subject.color}88)`,
         },
         animated: false,
       }];
     });
 
-    const subjectConceptEdges: FlowEdge[] = [];
-    for (const subject of subjects) {
-      const subjectPos = layoutPositions.get(`__subject_${subject.id}`);
-      if (!subjectPos) continue;
+    const subjectTopicEdges: FlowEdge[] = topicClusters.flatMap((cluster) => {
+      if (!visibleNodeIds.has(cluster.id) || !visibleNodeIds.has(`__subject_${cluster.subjectId}`)) {
+        return [];
+      }
 
-      const subjectNodes = knowledgeNodes
-        .filter((n) => n.subject_id === subject.id && visibleNodeIds.has(n.id))
-        .sort((a, b) => a.difficulty - b.difficulty);
+      const isSelectedEdge = cluster.nodeIds.includes(selectedNodeId || '');
+      const opacity = hasSelection && !isSelectedEdge ? 0.08 : 0.32;
 
-      const minDiff = subjectNodes.length > 0 ? subjectNodes[0].difficulty : null;
-      if (minDiff === null) continue;
+      return [{
+        id: `subject-${cluster.subjectId}-to-topic-${cluster.id}`,
+        source: `__subject_${cluster.subjectId}`,
+        target: cluster.id,
+        sourceHandle: 'center-src',
+        targetHandle: 'center-tgt',
+        type: 'straight',
+        style: {
+          stroke: cluster.color,
+          strokeWidth: 1.8,
+          opacity,
+          filter: hasSelection && !isSelectedEdge ? '' : `drop-shadow(0 0 5px ${cluster.color}44)`,
+        },
+      }];
+    });
 
-      const lowestNodes = subjectNodes.filter((n) => n.difficulty === minDiff);
+    const topicConceptEdges: FlowEdge[] = topicClusters.flatMap((cluster) => {
+      const lowestDifficulty = Math.min(
+        ...cluster.nodeIds.map((nodeId) => knowledgeNodes.find((node) => node.id === nodeId)?.difficulty ?? Number.POSITIVE_INFINITY)
+      );
 
-      for (const node of lowestNodes) {
-        const nodePos = layoutPositions.get(node.id);
-        if (!nodePos) continue;
+      const entryNodes = cluster.nodeIds.filter(
+        (nodeId) => (knowledgeNodes.find((node) => node.id === nodeId)?.difficulty ?? Number.POSITIVE_INFINITY) === lowestDifficulty
+      );
 
-        const { sourceHandle, targetHandle } = getRadialHandles(subjectPos.x, subjectPos.y, nodePos.x, nodePos.y);
-        const sDist = Math.hypot(nodePos.x - subjectPos.x, nodePos.y - subjectPos.y);
-        const sT = Math.min(1, Math.max(0, (sDist - 150) / 500));
-        const sFade = 1 - sT * 0.7;
-        const shortEdgeBoost = 1 + (1 - sT) * 0.55;
-        const isSelectedEdge = selectedNodeId === node.id;
-        const baseSubjectEdgeWidth = 2.2 * (0.9 + 0.55 * sFade);
-        const baseSubjectEdgeOpacity = Math.min(0.82, 0.46 * sFade * shortEdgeBoost);
+      return entryNodes.flatMap((nodeId) => {
+        if (!visibleNodeIds.has(cluster.id) || !visibleNodeIds.has(nodeId)) {
+          return [];
+        }
 
-        subjectConceptEdges.push({
-          id: `subject-${subject.id}-to-${node.id}`,
-          source: `__subject_${subject.id}`,
-          target: node.id,
-          sourceHandle,
-          targetHandle,
+        const isSelectedEdge = selectedNodeId === nodeId;
+
+        return [{
+          id: `topic-${cluster.id}-to-${nodeId}`,
+          source: cluster.id,
+          target: nodeId,
+          sourceHandle: 'center-src',
+          targetHandle: 'center-tgt',
           type: 'straight',
           style: {
-            stroke: subject.color,
-            strokeWidth: hasSelection && !isSelectedEdge
-              ? Math.max(0.9, baseSubjectEdgeWidth * 0.72)
-              : baseSubjectEdgeWidth,
-            opacity: hasSelection && !isSelectedEdge
-              ? Math.max(0.06, baseSubjectEdgeOpacity * 0.16)
-              : baseSubjectEdgeOpacity,
-            filter: hasSelection && !isSelectedEdge
-              ? ''
-              : sFade > 0.35 ? `drop-shadow(0 0 6px ${subject.color}77)` : '',
+            stroke: cluster.color,
+            strokeWidth: hasSelection && !isSelectedEdge ? 1 : 1.7,
+            opacity: hasSelection && !isSelectedEdge ? 0.08 : 0.24,
+            filter: hasSelection && !isSelectedEdge ? '' : `drop-shadow(0 0 5px ${cluster.color}33)`,
           },
-          animated: false,
-        });
-      }
-    }
+        }];
+      });
+    });
 
     const connectionMap = new Map<string, MergedConnection>();
 
@@ -280,45 +409,37 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
       }
     }
 
-    for (const prereq of prerequisites) {
-      const key = [prereq.prerequisite_node_id, prereq.node_id].sort().join('::');
+    for (const prerequisite of prerequisites) {
+      const key = [prerequisite.prerequisite_node_id, prerequisite.node_id].sort().join('::');
       if (!connectionMap.has(key)) {
         connectionMap.set(key, {
-          source: prereq.prerequisite_node_id,
-          target: prereq.node_id,
+          source: prerequisite.prerequisite_node_id,
+          target: prerequisite.node_id,
           type: 'requires',
         });
       }
     }
 
     const conceptEdges: FlowEdge[] = Array.from(connectionMap.entries())
-      .filter(([, conn]) => visibleNodeIds.has(conn.source) && visibleNodeIds.has(conn.target))
-      .map(([key, conn]) => {
-        const sourcePos = layoutPositions.get(conn.source);
-        const targetPos = layoutPositions.get(conn.target);
+      .filter(([, connection]) => visibleNodeIds.has(connection.source) && visibleNodeIds.has(connection.target))
+      .map(([key, connection]) => {
+        const sourcePos = layoutPositions.get(connection.source);
+        const targetPos = layoutPositions.get(connection.target);
 
-        let sourceHandle = 'bottom-src';
-        let targetHandle = 'top-tgt';
+        const sourceNode = knowledgeNodes.find((node) => node.id === connection.source);
+        const targetNode = knowledgeNodes.find((node) => node.id === connection.target);
+        const sourceSubject = subjects.find((subject) => subject.id === sourceNode?.subject_id);
+        const targetSubject = subjects.find((subject) => subject.id === targetNode?.subject_id);
+
+        let distance = 300;
         if (sourcePos && targetPos) {
-          const handles = getRadialHandles(sourcePos.x, sourcePos.y, targetPos.x, targetPos.y);
-          sourceHandle = handles.sourceHandle;
-          targetHandle = handles.targetHandle;
+          distance = Math.hypot(targetPos.x - sourcePos.x, targetPos.y - sourcePos.y);
         }
 
-        const sourceNode = knowledgeNodes.find((n) => n.id === conn.source);
-        const targetNode = knowledgeNodes.find((n) => n.id === conn.target);
-        const sourceSubject = subjects.find((s) => s.id === sourceNode?.subject_id);
-        const targetSubject = subjects.find((s) => s.id === targetNode?.subject_id);
-
-        let dist = 300;
-        if (sourcePos && targetPos) {
-          dist = Math.hypot(targetPos.x - sourcePos.x, targetPos.y - sourcePos.y);
-        }
-        const t = Math.min(1, Math.max(0, (dist - 150) / 650));
+        const t = Math.min(1, Math.max(0, (distance - 150) / 650));
         const distanceFade = 1 - t * 0.85;
-
         const shortEdgeBoost = 1 + (1 - t) * 0.55;
-        const isSelectedEdge = selectedNodeId === conn.source || selectedNodeId === conn.target;
+        const isSelectedEdge = selectedNodeId === connection.source || selectedNodeId === connection.target;
 
         let edgeColor = '#475569';
         let baseWidth = 1;
@@ -358,11 +479,11 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
 
         return {
           id: `web-${key}`,
-          source: conn.source,
-          target: conn.target,
-          sourceHandle,
-          targetHandle,
-          label: showEdgeLabels ? getRelationshipLabel(conn.type) : undefined,
+          source: connection.source,
+          target: connection.target,
+          sourceHandle: 'center-src',
+          targetHandle: 'center-tgt',
+          label: showEdgeLabels ? getRelationshipLabel(connection.type) : undefined,
           type: 'straight',
           animated: false,
           style: { stroke: edgeColor, strokeWidth: edgeWidth, opacity: edgeOpacity, filter: finalFilter },
@@ -377,23 +498,133 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
         };
       });
 
-    return [...subjectEdges, ...subjectConceptEdges, ...conceptEdges];
-  }, [knowledgeEdges, prerequisites, rfNodes, subjects, knowledgeNodes, layoutPositions, showEdgeLabels, selectedNodeId]);
+    return [...subjectEdges, ...subjectTopicEdges, ...topicConceptEdges, ...conceptEdges];
+  }, [
+    knowledgeEdges,
+    knowledgeNodes,
+    layoutPositions,
+    prerequisites,
+    rfNodes,
+    selectedNodeId,
+    showEdgeLabels,
+    subjects,
+    topicClusters,
+  ]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(rfNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(rfEdges);
 
   useEffect(() => {
-    setNodes(rfNodes);
+    if (!isAnimatingRef.current) {
+      setNodes(rfNodes);
+    }
   }, [rfNodes, setNodes]);
+
+  useEffect(() => {
+    return () => {
+      if (animationRef.current !== null) cancelAnimationFrame(animationRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     setEdges(rfEdges);
   }, [rfEdges, setEdges]);
 
+  const switchPreset = useCallback((preset: 'radial' | 'solar') => {
+    savedPositionsRef.current = {};
+    persistPositions({});
+    setLayoutPreset(preset);
+  }, []);
+
+  const handleNodesChange = useCallback((changes: NodeChange[]) => {
+    onNodesChange(changes);
+
+    let hasNew = false;
+    const updated = { ...savedPositionsRef.current };
+    for (const change of changes) {
+      if (change.type === 'position' && change.dragging === false && change.position) {
+        updated[change.id] = { x: change.position.x, y: change.position.y };
+        hasNew = true;
+      }
+    }
+    if (hasNew) {
+      savedPositionsRef.current = updated;
+      persistPositions(updated);
+    }
+  }, [onNodesChange]);
+
+  const handleResetLayout = useCallback(() => {
+    if (animationRef.current !== null) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    }
+
+    const startSnapshot: Record<string, { x: number; y: number }> = {};
+    setNodes(current => {
+      for (const n of current) startSnapshot[n.id] = { ...n.position };
+      return current;
+    });
+
+    const getTarget = (nodeId: string): { x: number; y: number } | null => {
+      const pos = layoutPositions.get(nodeId);
+      if (!pos) return null;
+      if (nodeId === '__root__') return { x: pos.x - 198, y: pos.y - 198 };
+      if (nodeId.startsWith('__subject_')) return { x: pos.x - 154, y: pos.y - 154 };
+      if (nodeId.startsWith('__topic_')) return { x: pos.x - 106, y: pos.y - 106 };
+      const kn = knowledgeNodes.find(n => n.id === nodeId);
+      const diff = kn?.difficulty ?? 1;
+      const size = diff <= 2 ? 180 : diff <= 4 ? 240 : 300;
+      return { x: pos.x - size / 2, y: pos.y - size / 2 };
+    };
+
+    const duration = 3000;
+    const startTime = performance.now();
+    isAnimatingRef.current = true;
+
+    const easeInOut = (t: number) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - startTime) / duration);
+      const e = easeInOut(t);
+
+      setNodes(current =>
+        current.map(node => {
+          const start = startSnapshot[node.id];
+          const target = getTarget(node.id);
+          if (!start || !target) return node;
+          return {
+            ...node,
+            position: {
+              x: start.x + (target.x - start.x) * e,
+              y: start.y + (target.y - start.y) * e,
+            },
+          };
+        })
+      );
+
+      if (t < 1) {
+        animationRef.current = requestAnimationFrame(tick);
+      } else {
+        isAnimatingRef.current = false;
+        animationRef.current = null;
+        savedPositionsRef.current = {};
+        persistPositions({});
+      }
+    };
+
+    animationRef.current = requestAnimationFrame(tick);
+  }, [layoutPositions, knowledgeNodes, setNodes]);
+
   const handleNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {
-      if (node.id === '__root__' || node.id.startsWith('__subject_')) return;
+      if (
+        node.id === '__root__' ||
+        node.id.startsWith('__subject_') ||
+        node.id.startsWith('__topic_')
+      ) {
+        return;
+      }
 
       setSelectedNodeId(node.id);
       onNodeClick(node.id);
@@ -406,17 +637,14 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
         }).catch(console.error);
       }
     },
-    [setSelectedNodeId, onNodeClick, user, userProgress]
+    [onNodeClick, setSelectedNodeId, user, userProgress]
   );
 
-  const handlePaneDoubleClick = useCallback(
-    () => {
-      if (graphMode === 'edit') {
-        onAddNode(selectedNodeId || undefined);
-      }
-    },
-    [graphMode, selectedNodeId, onAddNode]
-  );
+  const handlePaneDoubleClick = useCallback(() => {
+    if (graphMode === 'edit') {
+      onAddNode(selectedNodeId || undefined);
+    }
+  }, [graphMode, onAddNode, selectedNodeId]);
 
   return (
     <div className="w-full h-full relative">
@@ -435,10 +663,7 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
               {subjects.map((subject) => (
                 <SelectItem key={subject.id} value={subject.id}>
                   <span className="flex items-center gap-2">
-                    <span
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: subject.color }}
-                    />
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: subject.color }} />
                     {subject.name}
                   </span>
                 </SelectItem>
@@ -450,10 +675,10 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
         <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-2">
           <Search className="w-4 h-4 text-slate-500" />
           <Input
-            placeholder="Search nodes..."
+            placeholder="Search nodes or topics..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-64 h-8 text-sm border-0 focus:ring-0 bg-transparent text-slate-200 placeholder:text-slate-500"
+            onChange={(event) => setSearchQuery(event.target.value)}
+            className="w-72 h-8 text-sm border-0 focus:ring-0 bg-transparent text-slate-200 placeholder:text-slate-500"
           />
         </div>
       </Panel>
@@ -476,6 +701,29 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
           </Button>
         </div>
 
+        <div className="flex items-center gap-1 bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-2">
+          <Button
+            variant={layoutPreset === 'radial' ? 'default' : 'outline'}
+            size="sm"
+            className="flex items-center gap-1.5"
+            onClick={() => switchPreset('radial')}
+            title="Radial layout — hierarchical sectors"
+          >
+            <Network className="w-3.5 h-3.5" />
+            Radial
+          </Button>
+          <Button
+            variant={layoutPreset === 'solar' ? 'default' : 'outline'}
+            size="sm"
+            className="flex items-center gap-1.5"
+            onClick={() => switchPreset('solar')}
+            title="Solar system layout — planets and moons"
+          >
+            <Sun className="w-3.5 h-3.5" />
+            Solar
+          </Button>
+        </div>
+
         {graphMode === 'edit' && (
           <div className="flex flex-col gap-1.5 bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-2">
             <Button size="sm" variant="outline" onClick={() => onAddNode(selectedNodeId || undefined)}>
@@ -494,33 +742,45 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
         )}
 
         <div className="bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-3 text-xs">
-          <p className="font-medium text-slate-400 mb-2 tracking-wide uppercase text-[10px]">Node Status</p>
+          <p className="font-medium text-slate-400 mb-2 tracking-wide uppercase text-[10px]">Learning State</p>
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full border border-slate-600" style={{ backgroundColor: '#0a0e1a', boxShadow: '0 0 4px rgba(100,116,139,0.3)' }} />
-              <span className="text-slate-500">Untouched</span>
+              <Lock className="w-3.5 h-3.5 text-slate-500" />
+              <span className="text-slate-500">Locked by prerequisites</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-sky-400" />
+              <span className="text-slate-300">Ready next</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full border border-amber-500/50" style={{ backgroundColor: '#0a0e1a', boxShadow: '0 0 6px rgba(245,158,11,0.4)' }} />
               <span className="text-slate-400">In Progress</span>
             </div>
             <div className="flex items-center gap-2">
+              <RotateCcw className="w-3.5 h-3.5 text-amber-300" />
+              <span className="text-slate-300">Review due</span>
+            </div>
+            <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full border border-emerald-400/50" style={{ backgroundColor: '#0a0e1a', boxShadow: '0 0 8px rgba(52,211,153,0.5)' }} />
-              <span className="text-slate-300">Mastered</span>
+              <span className="text-slate-200">Mastered</span>
             </div>
             <hr className="my-1 border-slate-700/50" />
-            <p className="font-medium text-slate-400 mb-1 tracking-wide uppercase text-[10px]">Node Size</p>
+            <p className="font-medium text-slate-400 mb-1 tracking-wide uppercase text-[10px]">Structure</p>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-slate-600" />
-              <span className="text-slate-500">Small - Basics</span>
+              <span className="w-3 h-3 rounded-full bg-fuchsia-500/70" />
+              <span className="text-slate-400">Root</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-md bg-slate-600" />
-              <span className="text-slate-500">Notable - Intermediate</span>
+              <span className="w-3 h-3 rounded-full bg-slate-300/70" />
+              <span className="text-slate-400">Subject</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-4 h-4 rounded-md bg-slate-600" />
-              <span className="text-slate-500">Keystone - Advanced</span>
+              <Layers3 className="w-3.5 h-3.5 text-slate-300" />
+              <span className="text-slate-400">Topic</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-md bg-slate-300/70" />
+              <span className="text-slate-400">Concept</span>
             </div>
           </div>
         </div>
@@ -529,7 +789,7 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        onNodesChange={onNodesChange}
+        onNodesChange={handleNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={handleNodeClick}
         onPaneClick={() => {}}
@@ -537,7 +797,7 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
         nodeTypes={nodeTypes}
         connectionMode={ConnectionMode.Loose}
         fitView
-        fitViewOptions={{ padding: 0.3, maxZoom: 1 }}
+        fitViewOptions={{ padding: 0.42, maxZoom: 1 }}
         minZoom={0.02}
         maxZoom={4}
         zoomOnScroll
@@ -548,8 +808,17 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
         proOptions={{ hideAttribution: true }}
         className="bg-slate-950"
       >
-        <SectorBackground sectors={subjectSectors} />
+        <SectorBackground sectors={subjectSectors} maxRadius={layoutMaxRadius} opacity={0.04} />
         <Controls className="bg-slate-900 border border-slate-700/50 rounded-lg shadow-lg [&>button]:bg-slate-800 [&>button]:border-slate-700 [&>button]:text-slate-300 [&>button:hover]:bg-slate-700" />
+        <Panel position="bottom-left" style={{ marginLeft: '52px', marginBottom: '10px' }}>
+          <button
+            onClick={handleResetLayout}
+            className="bg-slate-900 border border-slate-700/50 rounded-lg shadow-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+            title="Reset to default layout"
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+        </Panel>
         <MiniMap
           nodeStrokeWidth={3}
           className="border border-slate-700/50 rounded-lg shadow-lg"
@@ -559,13 +828,17 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
             if (node.id === '__root__') return '#a855f7';
             if (node.id.startsWith('__subject_')) {
               const data = node.data as { color?: string };
-              return data?.color || '#6366f1';
+              return data.color || '#6366f1';
             }
-            const data = node.data as { subject?: { color: string }; status?: string };
-            return data?.subject?.color || '#60a5fa';
+            if (node.id.startsWith('__topic_')) {
+              const data = node.data as { color?: string };
+              return data.color || '#94a3b8';
+            }
+            const data = node.data as { subject?: { color: string } };
+            return data.subject?.color || '#60a5fa';
           }}
         />
-        <Background variant={BackgroundVariant.Dots} gap={30} size={0.8} color="#1e293b80" />
+        <Background variant={BackgroundVariant.Dots} gap={32} size={0.8} color="#1e293b80" />
       </ReactFlow>
     </div>
   );
