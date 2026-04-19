@@ -70,13 +70,10 @@ export function AddNodeModal({ open, onClose, sourceNodeId }: AddNodeModalProps)
         }),
       });
 
-      if (!nodeRes.ok) {
-        const data = await nodeRes.json();
-        throw new Error(data.error || 'Failed to create node');
-      }
+      const nodeData = await nodeRes.json();
+      if (!nodeRes.ok) throw new Error(nodeData.error || 'Failed to create node');
 
-      const { node } = await nodeRes.json();
-      addNode(node);
+      addNode(nodeData.node);
 
       // If source node exists, create the edge
       if (sourceNodeId) {

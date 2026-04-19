@@ -13,6 +13,7 @@ import { MasteryTestModal } from '@/components/modals/mastery-test-modal';
 import { EditNodeModal } from '@/components/modals/edit-node-modal';
 import { LayoutList, Loader2, Network } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import toast from 'react-hot-toast';
 
 function GraphPageContent() {
   const router = useRouter();
@@ -74,6 +75,7 @@ function GraphPageContent() {
       setUserProgress(progressData.progress || {});
     } catch (error) {
       console.error('Failed to fetch graph data:', error);
+      toast.error('Failed to load graph data. Try refreshing.');
     } finally {
       setDataLoading(false);
     }

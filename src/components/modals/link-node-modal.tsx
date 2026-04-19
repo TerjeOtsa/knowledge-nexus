@@ -71,13 +71,10 @@ export function LinkNodeModal({ open, onClose, sourceNodeId }: LinkNodeModalProp
         body: JSON.stringify(edgeBody),
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to create connection');
-      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create connection');
 
-      const { edge } = await res.json();
-      addEdge(edge);
+      addEdge(data.edge);
       resetForm();
       onClose();
     } catch (err: unknown) {

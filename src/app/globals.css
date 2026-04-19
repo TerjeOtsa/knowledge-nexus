@@ -44,6 +44,29 @@ body {
   background: radial-gradient(ellipse at center, #1e1b4b 0%, #0f172a 50%, #020617 100%);
 }
 
+.knowledge-graph-surface .react-flow__background {
+  background: var(--graph-background);
+}
+
+.knowledge-graph-surface .react-flow__controls {
+  background: var(--graph-panel-bg);
+  border-color: var(--graph-panel-border);
+}
+
+.knowledge-graph-surface .react-flow__controls-button {
+  background: var(--graph-control-bg);
+  border-color: var(--graph-panel-border);
+  color: var(--graph-panel-text);
+}
+
+.knowledge-graph-surface .react-flow__controls-button:hover {
+  background: var(--graph-control-hover);
+}
+
+.knowledge-graph-surface input[type="range"] {
+  accent-color: var(--graph-accent);
+}
+
 /* Smooth edge animations */
 .react-flow__edge.animated path {
   animation: dash 1.5s linear infinite;

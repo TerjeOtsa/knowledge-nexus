@@ -33,6 +33,7 @@ import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { estimateStudyMinutes, getNodeLearningMeta, getTopicLabel } from '@/lib/learner-state';
 import { formatDate, getDifficultyLabel, getRelationshipLabel } from '@/lib/utils';
+import toast from 'react-hot-toast';
 import type { Edge as KEdge, KnowledgeNode, MasteryTest, TestResult } from '@/types';
 
 type TabId = 'learn' | 'test' | 'notes';
@@ -111,6 +112,7 @@ export function NodeWorkspace({
         setDetails(data);
       } catch (error) {
         console.error('Failed to fetch node details:', error);
+        toast.error('Failed to load lesson. Try selecting the node again.');
         setDetails(null);
       } finally {
         setLoading(false);
@@ -154,6 +156,7 @@ export function NodeWorkspace({
       setLastSaved(new Date().toISOString());
     } catch (error) {
       console.error('Failed to save note:', error);
+      toast.error('Note could not be saved. Check your connection and try again.');
     } finally {
       setSaving(false);
     }
@@ -229,6 +232,7 @@ export function NodeWorkspace({
       setTestPhase('results');
     } catch (error) {
       console.error('Test submit failed:', error);
+      toast.error('Failed to submit test. Try again.');
     } finally {
       setSubmitting(false);
     }
@@ -258,7 +262,7 @@ export function NodeWorkspace({
 
   return (
     <div className="absolute inset-0 z-50 overflow-hidden bg-slate-950/10 backdrop-blur-[1px]">
-      <div className="flex h-full w-full justify-end">
+      <div className="flex h-full w-full justify-center">
         <div className="h-full w-full bg-white shadow-2xl xl:w-[min(1200px,92vw)]">
           <div className="flex h-full flex-col">
             <div className="border-b border-slate-200 bg-white/95">
@@ -776,7 +780,7 @@ export function NodeWorkspace({
                             <div className="text-4xl font-bold text-slate-950">{testResult.score}%</div>
                             <div className="flex flex-wrap gap-3">
                               {!testResult.passed && (
-                                <Button variant="outline" onClick={() => { setTestPhase('questions'); setCurrentQuestionIndex(0); }}>
+                                <Button variant="outline" onClick={() => { setTestPhase('questions'); setCurrentQuestionIndex(0); setAnswers({}); setTestResult(null); }}>
                                   Try Again
                                 </Button>
                               )}

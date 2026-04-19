@@ -258,6 +258,31 @@ export interface RecentActivity {
   timestamp: string;
 }
 
+// ---- Nexus Types ----
+
+export type NexusVisibility = 'private' | 'link';
+
+export interface Nexus {
+  id: string;
+  title: string;
+  description?: string;
+  created_by: string;
+  visibility: NexusVisibility;
+  created_at: string;
+  updated_at: string;
+  // Joined counts (returned from list queries)
+  node_count?: number;
+  subject_count?: number;
+}
+
+export interface NexusSubscription {
+  id: string;
+  nexus_id: string;
+  user_id: string;
+  joined_at: string;
+  nexus?: Nexus;
+}
+
 // ---- Auth Types ----
 
 export interface AuthSession {

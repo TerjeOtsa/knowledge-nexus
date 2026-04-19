@@ -4,7 +4,8 @@
       "Bash(git -C /c/Users/terje/OneDrive/Dokumenter/GitHub/knowledge-nexus status --short)",
       "Bash(git -C /c/Users/terje/OneDrive/Dokumenter/GitHub/knowledge-nexus diff src/lib/supabase.ts)",
       "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\('version','?'\\)\\)\")",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)"
     ]
   }
 }

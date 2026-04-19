@@ -18,10 +18,11 @@ interface EditNodeModalProps {
 }
 
 export function EditNodeModal({ open, onClose, nodeId }: EditNodeModalProps) {
-  const { nodes, subjects, updateNode } = useGraphStore();
+  const { nodes, subjects, updateNode, removeNode, setSelectedNodeId } = useGraphStore();
   const node = nodes.find((n) => n.id === nodeId);
 
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
   const [title, setTitle] = useState('');
   const [subjectId, setSubjectId] = useState('');
@@ -65,18 +66,42 @@ export function EditNodeModal({ open, onClose, nodeId }: EditNodeModalProps) {
         body: JSON.stringify(body),
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to update node');
-      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update node');
 
-      const { node: updatedNode } = await res.json();
-      updateNode(nodeId, updatedNode);
+      updateNode(nodeId, data.node);
       onClose();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    const confirmed = window.confirm(`Delete "${node?.title}" from the graph? This cannot be undone.`);
+    if (!confirmed) return;
+
+    setDeleting(true);
+    setError('');
+
+    try {
+      const res = await fetch(`/api/nodes/${nodeId}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to delete node');
+      }
+
+      removeNode(nodeId);
+      setSelectedNodeId(null);
+      onClose();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -150,8 +175,17 @@ export function EditNodeModal({ open, onClose, nodeId }: EditNodeModalProps) {
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={loading}>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={loading || deleting}
+              className="mr-auto"
+            >
+              {deleting ? 'Deleting...' : 'Delete Node'}
+            </Button>
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading || deleting}>Cancel</Button>
+            <Button type="submit" disabled={loading || deleting}>
               {loading ? 'Saving...' : 'Save Changes'}
             </Button>
           </DialogFooter>

@@ -5,8 +5,9 @@ import { useGraphStore, useTestStore, useAuthStore } from '@/store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ShareNodeModal } from '@/components/graph/share-node-modal';
 import {
-  X, BookOpen, CheckCircle, PlayCircle, Plus, Link2, Edit,
+  X, BookOpen, CheckCircle, PlayCircle, Plus, Link2, Edit, Share2,
   ArrowRight, ArrowLeft, Lightbulb, Target, Layers, AlertCircle
 } from 'lucide-react';
 import { getRelationshipLabel, getDifficultyLabel, formatDate } from '@/lib/utils';
@@ -42,6 +43,7 @@ export function NodeDetailPanel({
   const { user } = useAuthStore();
   const [details, setDetails] = useState<NodeDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     async function fetchNodeDetails() {
@@ -63,7 +65,7 @@ export function NodeDetailPanel({
 
   if (loading) {
     return (
-      <div className="w-[420px] h-full bg-white border-l border-gray-200 flex items-center justify-center">
+      <div className="w-105 h-full bg-white border-l border-gray-200 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     );
@@ -71,7 +73,7 @@ export function NodeDetailPanel({
 
   if (!details?.node) {
     return (
-      <div className="w-[420px] h-full bg-white border-l border-gray-200 flex items-center justify-center">
+      <div className="w-105 h-full bg-white border-l border-gray-200 flex items-center justify-center">
         <p className="text-gray-500">Node not found</p>
       </div>
     );
@@ -92,7 +94,7 @@ export function NodeDetailPanel({
 
   return (
     <div
-      className={`w-[420px] h-full border-l flex flex-col shadow-xl ${isMastered ? 'border-emerald-200' : 'border-gray-200'}`}
+      className={`w-105 h-full border-l flex flex-col shadow-xl ${isMastered ? 'border-emerald-200' : 'border-gray-200'}`}
       style={{
         background: isMastered
           ? 'linear-gradient(180deg, #ecfdf5 0%, #ffffff 20%, #f0fdf4 100%)'
@@ -291,7 +293,27 @@ export function NodeDetailPanel({
             </Button>
           </div>
         )}
+
+        {/* Share — available to any logged-in editor/admin */}
+        {(user?.role === 'admin' || user?.role === 'editor') && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full text-blue-700 border-blue-200 hover:bg-blue-50"
+            onClick={() => setShareOpen(true)}
+          >
+            <Share2 className="w-3.5 h-3.5 mr-1.5" />
+            Share with Students
+          </Button>
+        )}
       </div>
+
+      <ShareNodeModal
+        nodeId={nodeId}
+        nodeTitle={node.title}
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+      />
     </div>
   );
 }

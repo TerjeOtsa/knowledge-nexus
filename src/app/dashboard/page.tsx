@@ -44,11 +44,12 @@ export default function DashboardPage() {
     if (!user) return;
 
     fetch('/api/dashboard')
-      .then((res) => res.json())
-      .then((data) => {
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Failed to load dashboard');
+        const data = await res.json();
         if (data.stats) setStats(data.stats);
       })
-      .catch(console.error)
+      .catch((err) => console.error(err))
       .finally(() => setLoading(false));
   }, [user]);
 

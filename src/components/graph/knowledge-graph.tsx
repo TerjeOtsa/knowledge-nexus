@@ -28,6 +28,21 @@ import { estimateStudyMinutes, getNodeLearningMeta, getTopicKey, getTopicLabel }
 import { buildTopicNodeId, computeRadialLayout, computeSolarLayout } from '@/lib/radial-layout';
 import type { NodeStatus, RelationshipType } from '@/types';
 import { ConceptNode } from './concept-node';
+import { DesignMenu } from './design-menu';
+import {
+  DEFAULT_GRAPH_DESIGN_SETTINGS,
+  alphaHex,
+  getConceptNodeSize,
+  getGraphFontFamily,
+  getGraphTheme,
+  getStructureNodeSize,
+  loadGraphDesignSettings,
+  persistGraphDesignSettings,
+  resolveGraphAccent,
+  sanitizeGraphDesignSettings,
+  scaleOpacity,
+  type GraphDesignSettings,
+} from './design-settings';
 import { RootNode } from './root-node';
 import { SectorBackground } from './sector-background';
 import { SubjectNode } from './subject-node';
@@ -94,16 +109,60 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
 
   const { user } = useAuthStore();
 
-  const savedPositionsRef = useRef<Record<string, { x: number; y: number }>>(loadSavedPositions());
   const isAnimatingRef = useRef(false);
   const animationRef = useRef<number | null>(null);
   const [layoutPreset, setLayoutPreset] = useState<'radial' | 'solar'>('radial');
+  const [savedPositions, setSavedPositions] = useState<Record<string, { x: number; y: number }>>(() => loadSavedPositions());
+  const [designSettings, setDesignSettings] = useState<GraphDesignSettings>(() => loadGraphDesignSettings());
+  const graphTheme = useMemo(() => getGraphTheme(designSettings.themeId), [designSettings.themeId]);
+  const graphFontFamily = useMemo(() => getGraphFontFamily(designSettings.fontId), [designSettings.fontId]);
+  const edgeGlowMultiplier = designSettings.glowStrength * graphTheme.glowBase;
+  const edgeOpacityMultiplier = designSettings.edgeStrength * graphTheme.edgeBase;
+  const edgeWidthMultiplier = 0.78 + (designSettings.edgeStrength * 0.22);
+
+  const panelStyle = useMemo<React.CSSProperties>(() => ({
+    backgroundColor: graphTheme.panelBg,
+    borderColor: graphTheme.panelBorder,
+    color: graphTheme.panelText,
+  }), [graphTheme]);
+
+  const softPanelStyle = useMemo<React.CSSProperties>(() => ({
+    backgroundColor: graphTheme.panelSoftBg,
+    borderColor: graphTheme.panelBorder,
+    color: graphTheme.panelText,
+  }), [graphTheme]);
+
+  const flowStyle = useMemo(() => ({
+    background: graphTheme.canvasBackground,
+    color: graphTheme.panelText,
+    fontFamily: graphFontFamily,
+    '--graph-background': graphTheme.canvasBackground,
+    '--graph-panel-bg': graphTheme.panelBg,
+    '--graph-panel-border': graphTheme.panelBorder,
+    '--graph-panel-text': graphTheme.panelText,
+    '--graph-panel-muted': graphTheme.panelMuted,
+    '--graph-control-bg': graphTheme.panelSoftBg,
+    '--graph-control-hover': graphTheme.inputBg,
+    '--graph-accent': graphTheme.rootAccent,
+  } as React.CSSProperties), [graphFontFamily, graphTheme]);
+
+  useEffect(() => {
+    persistGraphDesignSettings(designSettings);
+  }, [designSettings]);
 
   const { positions: layoutPositions, sectors: subjectSectors, maxRadius: layoutMaxRadius } = useMemo(
     () => layoutPreset === 'solar'
       ? computeSolarLayout(knowledgeNodes, knowledgeEdges, subjects)
       : computeRadialLayout(knowledgeNodes, knowledgeEdges, subjects),
     [knowledgeNodes, knowledgeEdges, subjects, layoutPreset]
+  );
+
+  const themedSubjectSectors = useMemo(
+    () => subjectSectors.map((sector) => ({
+      ...sector,
+      color: resolveGraphAccent(sector.color, graphTheme),
+    })),
+    [graphTheme, subjectSectors]
   );
 
   const visibleNodes = useMemo(
@@ -182,11 +241,12 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
 
     const rootPos = layoutPositions.get('__root__');
     if (rootPos) {
+      const rootSize = getStructureNodeSize('root', designSettings);
       result.push({
         id: '__root__',
         type: 'root',
-        position: savedPositionsRef.current['__root__'] ?? { x: rootPos.x - 198, y: rootPos.y - 198 },
-        data: { label: 'Knowledge Nexus', dimmed: hasSelection },
+        position: savedPositions['__root__'] ?? { x: rootPos.x - rootSize / 2, y: rootPos.y - rootSize / 2 },
+        data: { label: 'Knowledge Nexus', dimmed: hasSelection, design: designSettings },
         selectable: false,
       });
     }
@@ -198,11 +258,12 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
 
       const subjectHasSearchMatch = !hasSearchQuery ||
         visibleNodes.some((node) => node.subject_id === subject.id && searchMatchedNodeIds.has(node.id));
+      const subjectSize = getStructureNodeSize('subject', designSettings);
 
       result.push({
         id: `__subject_${subject.id}`,
         type: 'subject',
-        position: savedPositionsRef.current[`__subject_${subject.id}`] ?? { x: pos.x - 154, y: pos.y - 154 },
+        position: savedPositions[`__subject_${subject.id}`] ?? { x: pos.x - subjectSize / 2, y: pos.y - subjectSize / 2 },
         data: {
           label: subject.name,
           color: subject.color,
@@ -211,6 +272,7 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
           dimmed: hasSelection || !subjectHasSearchMatch,
           solar: layoutPreset === 'solar',
           orbitPeriod: 12 + (subjects.indexOf(subject) * 7) % 16,
+          design: designSettings,
         },
         selectable: false,
       });
@@ -223,16 +285,18 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
       const topicHasSearchMatch = !hasSearchQuery ||
         cluster.label.toLowerCase().includes(normalizedSearchQuery) ||
         cluster.nodeIds.some((id) => searchMatchedNodeIds.has(id));
+      const topicSize = getStructureNodeSize('topic', designSettings);
 
       result.push({
         id: cluster.id,
         type: 'topic',
-        position: savedPositionsRef.current[cluster.id] ?? { x: pos.x - 106, y: pos.y - 106 },
+        position: savedPositions[cluster.id] ?? { x: pos.x - topicSize / 2, y: pos.y - topicSize / 2 },
         data: {
           label: cluster.label,
           color: cluster.color,
           nodeCount: cluster.nodeCount,
           dimmed: hasSelection || !topicHasSearchMatch,
+          design: designSettings,
         },
         selectable: false,
       });
@@ -263,7 +327,7 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
       }
 
       const diff = node.difficulty || 1;
-      const nodeSize = diff <= 2 ? 180 : diff <= 4 ? 240 : 300;
+      const nodeSize = getConceptNodeSize(diff, designSettings);
       const offset = nodeSize / 2;
       const isSelected = node.id === selectedNodeId;
       const isSearchMatch = hasSearchQuery && searchMatchedNodeIds.has(node.id);
@@ -274,7 +338,7 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
       result.push({
         id: node.id,
         type: 'concept',
-        position: savedPositionsRef.current[node.id] ?? { x: pos.x - offset, y: pos.y - offset },
+        position: savedPositions[node.id] ?? { x: pos.x - offset, y: pos.y - offset },
         data: {
           label: node.title,
           subject,
@@ -291,6 +355,7 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
             ? `${learningMeta.masteredPrerequisiteIds.length}/${learningMeta.prerequisiteIds.length} prerequisites mastered`
             : undefined,
           estimatedMinutes: estimateStudyMinutes(node.difficulty),
+          design: designSettings,
         },
         selected: isSelected,
       });
@@ -298,6 +363,7 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
 
     return result;
   }, [
+    designSettings,
     knowledgeEdges,
     knowledgeNodes,
     layoutPositions,
@@ -306,6 +372,7 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
     prerequisites,
     searchMatchedNodeIds,
     selectedNodeId,
+    savedPositions,
     subjects,
     topicClusters,
     userProgress,
@@ -321,6 +388,7 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
       if (!visibleNodeIds.has(`__subject_${subject.id}`)) {
         return [];
       }
+      const edgeColor = resolveGraphAccent(subject.color, graphTheme);
 
       return [{
         id: `root-to-${subject.id}`,
@@ -330,10 +398,10 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
         targetHandle: 'center-tgt',
         type: 'straight',
         style: {
-          stroke: subject.color,
-          strokeWidth: hasSelection ? 1.8 : 2.8,
-          opacity: hasSelection ? 0.1 : 0.62,
-          filter: hasSelection ? '' : `drop-shadow(0 0 7px ${subject.color}88)`,
+          stroke: edgeColor,
+          strokeWidth: (hasSelection ? 1.8 : 2.8) * edgeWidthMultiplier,
+          opacity: scaleOpacity(hasSelection ? 0.1 : 0.62, edgeOpacityMultiplier),
+          filter: hasSelection || edgeGlowMultiplier <= 0.03 ? '' : `drop-shadow(0 0 7px ${edgeColor}${alphaHex(0.53 * edgeGlowMultiplier)})`,
         },
         animated: false,
       }];
@@ -355,13 +423,15 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
         targetHandle: 'center-tgt',
         type: 'straight',
         style: {
-          stroke: cluster.color,
-          strokeWidth: 1.8,
-          opacity,
-          filter: hasSelection && !isSelectedEdge ? '' : `drop-shadow(0 0 5px ${cluster.color}44)`,
-        },
-      }];
-    });
+            stroke: resolveGraphAccent(cluster.color, graphTheme),
+            strokeWidth: 1.8 * edgeWidthMultiplier,
+            opacity: scaleOpacity(opacity, edgeOpacityMultiplier),
+            filter: (hasSelection && !isSelectedEdge) || edgeGlowMultiplier <= 0.03
+              ? ''
+              : `drop-shadow(0 0 5px ${resolveGraphAccent(cluster.color, graphTheme)}${alphaHex(0.27 * edgeGlowMultiplier)})`,
+          },
+        }];
+      });
 
     const topicConceptEdges: FlowEdge[] = topicClusters.flatMap((cluster) => {
       const lowestDifficulty = Math.min(
@@ -387,10 +457,12 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
           targetHandle: 'center-tgt',
           type: 'straight',
           style: {
-            stroke: cluster.color,
-            strokeWidth: hasSelection && !isSelectedEdge ? 1 : 1.7,
-            opacity: hasSelection && !isSelectedEdge ? 0.08 : 0.24,
-            filter: hasSelection && !isSelectedEdge ? '' : `drop-shadow(0 0 5px ${cluster.color}33)`,
+            stroke: resolveGraphAccent(cluster.color, graphTheme),
+            strokeWidth: (hasSelection && !isSelectedEdge ? 1 : 1.7) * edgeWidthMultiplier,
+            opacity: scaleOpacity(hasSelection && !isSelectedEdge ? 0.08 : 0.24, edgeOpacityMultiplier),
+            filter: (hasSelection && !isSelectedEdge) || edgeGlowMultiplier <= 0.03
+              ? ''
+              : `drop-shadow(0 0 5px ${resolveGraphAccent(cluster.color, graphTheme)}${alphaHex(0.2 * edgeGlowMultiplier)})`,
           },
         }];
       });
@@ -447,26 +519,28 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
         let edgeFilter = '';
 
         if (sourceSubject && targetSubject) {
+          const sourceColor = resolveGraphAccent(sourceSubject.color, graphTheme);
+          const targetColor = resolveGraphAccent(targetSubject.color, graphTheme);
           if (sourceSubject.id === targetSubject.id) {
-            edgeColor = sourceSubject.color;
+            edgeColor = sourceColor;
             baseWidth = 1.35;
             baseOpacity = 0.5;
-            edgeFilter = `drop-shadow(0 0 4px ${edgeColor}55)`;
+            edgeFilter = edgeGlowMultiplier <= 0.03 ? '' : `drop-shadow(0 0 4px ${edgeColor}${alphaHex(0.33 * edgeGlowMultiplier)})`;
           } else {
-            const c1 = sourceSubject.color.replace('#', '');
-            const c2 = targetSubject.color.replace('#', '');
+            const c1 = sourceColor.replace('#', '');
+            const c2 = targetColor.replace('#', '');
             const r = Math.round((parseInt(c1.substring(0, 2), 16) + parseInt(c2.substring(0, 2), 16)) / 2);
             const g = Math.round((parseInt(c1.substring(2, 4), 16) + parseInt(c2.substring(2, 4), 16)) / 2);
             const b = Math.round((parseInt(c1.substring(4, 6), 16) + parseInt(c2.substring(4, 6), 16)) / 2);
             edgeColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
             baseWidth = 1.85;
             baseOpacity = 0.58;
-            edgeFilter = `drop-shadow(0 0 6px ${edgeColor}77)`;
+            edgeFilter = edgeGlowMultiplier <= 0.03 ? '' : `drop-shadow(0 0 6px ${edgeColor}${alphaHex(0.47 * edgeGlowMultiplier)})`;
           }
         }
 
-        const baseEdgeOpacity = Math.min(0.96, baseOpacity * distanceFade * shortEdgeBoost);
-        const baseEdgeWidth = baseWidth * (0.95 + 1.0 * distanceFade);
+        const baseEdgeOpacity = Math.min(0.96, baseOpacity * distanceFade * shortEdgeBoost * edgeOpacityMultiplier);
+        const baseEdgeWidth = baseWidth * (0.95 + 1.0 * distanceFade) * edgeWidthMultiplier;
         const edgeOpacity = hasSelection && !isSelectedEdge
           ? Math.max(0.08, baseEdgeOpacity * 0.18)
           : baseEdgeOpacity;
@@ -488,11 +562,11 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
           animated: false,
           style: { stroke: edgeColor, strokeWidth: edgeWidth, opacity: edgeOpacity, filter: finalFilter },
           labelStyle: {
-            fontSize: 9,
-            fill: hasSelection && !isSelectedEdge ? '#64748b' : '#cbd5e1',
+            fontSize: 9 * designSettings.fontScale,
+            fill: hasSelection && !isSelectedEdge ? graphTheme.panelMuted : graphTheme.edgeLabelText,
             fontWeight: 400,
           },
-          labelBgStyle: { fill: '#0f172a', fillOpacity: hasSelection && !isSelectedEdge ? 0.35 : 0.9 },
+          labelBgStyle: { fill: graphTheme.edgeLabelBg, fillOpacity: hasSelection && !isSelectedEdge ? 0.35 : 0.9 },
           labelBgPadding: [3, 1] as [number, number],
           labelBgBorderRadius: 3,
         };
@@ -500,6 +574,11 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
 
     return [...subjectEdges, ...subjectTopicEdges, ...topicConceptEdges, ...conceptEdges];
   }, [
+    designSettings.fontScale,
+    edgeGlowMultiplier,
+    edgeOpacityMultiplier,
+    edgeWidthMultiplier,
+    graphTheme,
     knowledgeEdges,
     knowledgeNodes,
     layoutPositions,
@@ -531,16 +610,24 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
   }, [rfEdges, setEdges]);
 
   const switchPreset = useCallback((preset: 'radial' | 'solar') => {
-    savedPositionsRef.current = {};
+    setSavedPositions({});
     persistPositions({});
     setLayoutPreset(preset);
+  }, []);
+
+  const handleDesignSettingsChange = useCallback((settings: GraphDesignSettings) => {
+    setDesignSettings(sanitizeGraphDesignSettings(settings));
+  }, []);
+
+  const handleResetDesign = useCallback(() => {
+    setDesignSettings(DEFAULT_GRAPH_DESIGN_SETTINGS);
   }, []);
 
   const handleNodesChange = useCallback((changes: NodeChange[]) => {
     onNodesChange(changes);
 
     let hasNew = false;
-    const updated = { ...savedPositionsRef.current };
+    const updated = { ...savedPositions };
     for (const change of changes) {
       if (change.type === 'position' && change.dragging === false && change.position) {
         updated[change.id] = { x: change.position.x, y: change.position.y };
@@ -548,10 +635,10 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
       }
     }
     if (hasNew) {
-      savedPositionsRef.current = updated;
+      setSavedPositions(updated);
       persistPositions(updated);
     }
-  }, [onNodesChange]);
+  }, [onNodesChange, savedPositions]);
 
   const handleResetLayout = useCallback(() => {
     if (animationRef.current !== null) {
@@ -568,12 +655,21 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
     const getTarget = (nodeId: string): { x: number; y: number } | null => {
       const pos = layoutPositions.get(nodeId);
       if (!pos) return null;
-      if (nodeId === '__root__') return { x: pos.x - 198, y: pos.y - 198 };
-      if (nodeId.startsWith('__subject_')) return { x: pos.x - 154, y: pos.y - 154 };
-      if (nodeId.startsWith('__topic_')) return { x: pos.x - 106, y: pos.y - 106 };
+      if (nodeId === '__root__') {
+        const size = getStructureNodeSize('root', designSettings);
+        return { x: pos.x - size / 2, y: pos.y - size / 2 };
+      }
+      if (nodeId.startsWith('__subject_')) {
+        const size = getStructureNodeSize('subject', designSettings);
+        return { x: pos.x - size / 2, y: pos.y - size / 2 };
+      }
+      if (nodeId.startsWith('__topic_')) {
+        const size = getStructureNodeSize('topic', designSettings);
+        return { x: pos.x - size / 2, y: pos.y - size / 2 };
+      }
       const kn = knowledgeNodes.find(n => n.id === nodeId);
       const diff = kn?.difficulty ?? 1;
-      const size = diff <= 2 ? 180 : diff <= 4 ? 240 : 300;
+      const size = getConceptNodeSize(diff, designSettings);
       return { x: pos.x - size / 2, y: pos.y - size / 2 };
     };
 
@@ -608,13 +704,13 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
       } else {
         isAnimatingRef.current = false;
         animationRef.current = null;
-        savedPositionsRef.current = {};
+        setSavedPositions({});
         persistPositions({});
       }
     };
 
     animationRef.current = requestAnimationFrame(tick);
-  }, [layoutPositions, knowledgeNodes, setNodes]);
+  }, [designSettings, layoutPositions, knowledgeNodes, setNodes]);
 
   const handleNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {
@@ -647,23 +743,23 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
   }, [graphMode, onAddNode, selectedNodeId]);
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full relative" style={{ fontFamily: graphFontFamily }}>
       <Panel position="top-left" className="flex flex-col gap-2 z-10">
-        <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-2">
-          <Filter className="w-4 h-4 text-slate-500" />
+        <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-2" style={panelStyle}>
+          <Filter className="w-4 h-4 text-slate-500" style={{ color: graphTheme.panelMuted }} />
           <Select
             value={subjectFilter || 'all'}
             onValueChange={(value) => setSubjectFilter(value === 'all' ? null : value)}
           >
-            <SelectTrigger className="w-48 h-8 text-sm border-0 bg-transparent text-slate-200">
+            <SelectTrigger className="w-48 h-8 text-sm border-0 bg-transparent text-slate-200" style={{ color: graphTheme.panelText }}>
               <SelectValue placeholder="All Subjects" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-700 text-slate-200">
+            <SelectContent className="bg-slate-900 border-slate-700 text-slate-200" style={panelStyle}>
               <SelectItem value="all">All Subjects</SelectItem>
               {subjects.map((subject) => (
                 <SelectItem key={subject.id} value={subject.id}>
                   <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: subject.color }} />
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: resolveGraphAccent(subject.color, graphTheme) }} />
                     {subject.name}
                   </span>
                 </SelectItem>
@@ -672,19 +768,20 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
           </Select>
         </div>
 
-        <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-2">
-          <Search className="w-4 h-4 text-slate-500" />
+        <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-2" style={panelStyle}>
+          <Search className="w-4 h-4 text-slate-500" style={{ color: graphTheme.panelMuted }} />
           <Input
             placeholder="Search nodes or topics..."
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             className="w-72 h-8 text-sm border-0 focus:ring-0 bg-transparent text-slate-200 placeholder:text-slate-500"
+            style={{ color: graphTheme.panelText, backgroundColor: 'transparent' }}
           />
         </div>
       </Panel>
 
       <Panel position="top-right" className="flex flex-col gap-2 z-10">
-        <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-2">
+        <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-2" style={panelStyle}>
           <Button
             variant={graphMode === 'learn' ? 'default' : 'outline'}
             size="sm"
@@ -701,7 +798,7 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
           </Button>
         </div>
 
-        <div className="flex items-center gap-1 bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-2">
+        <div className="flex items-center gap-1 bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-2" style={panelStyle}>
           <Button
             variant={layoutPreset === 'radial' ? 'default' : 'outline'}
             size="sm"
@@ -724,8 +821,15 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
           </Button>
         </div>
 
+        <DesignMenu
+          settings={designSettings}
+          theme={graphTheme}
+          onSettingsChange={handleDesignSettingsChange}
+          onReset={handleResetDesign}
+        />
+
         {graphMode === 'edit' && (
-          <div className="flex flex-col gap-1.5 bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-2">
+          <div className="flex flex-col gap-1.5 bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-2" style={panelStyle}>
             <Button size="sm" variant="outline" onClick={() => onAddNode(selectedNodeId || undefined)}>
               <Plus className="w-4 h-4 mr-1" /> Add Node
             </Button>
@@ -735,52 +839,52 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
             <Button size="sm" variant="outline" onClick={toggleEdgeLabels}>
               <Tags className="w-4 h-4 mr-1" /> {showEdgeLabels ? 'Hide' : 'Show'} Labels
             </Button>
-            <p className="text-[10px] text-slate-500 text-center px-1">
+            <p className="text-[10px] text-slate-500 text-center px-1" style={{ color: graphTheme.panelMuted }}>
               Double-click canvas to add
             </p>
           </div>
         )}
 
-        <div className="bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-3 text-xs">
-          <p className="font-medium text-slate-400 mb-2 tracking-wide uppercase text-[10px]">Learning State</p>
+        <div className="bg-slate-900/90 backdrop-blur border border-slate-700/50 rounded-lg shadow-lg p-3 text-xs" style={panelStyle}>
+          <p className="font-medium text-slate-400 mb-2 tracking-wide uppercase text-[10px]" style={{ color: graphTheme.panelMuted }}>Learning State</p>
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
-              <Lock className="w-3.5 h-3.5 text-slate-500" />
-              <span className="text-slate-500">Locked by prerequisites</span>
+              <Lock className="w-3.5 h-3.5 text-slate-500" style={{ color: graphTheme.lockedColor }} />
+              <span className="text-slate-500" style={{ color: graphTheme.panelMuted }}>Locked by prerequisites</span>
             </div>
             <div className="flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-sky-400" />
-              <span className="text-slate-300">Ready next</span>
+              <Sparkles className="w-3.5 h-3.5 text-sky-400" style={{ color: graphTheme.readyColor }} />
+              <span className="text-slate-300" style={{ color: graphTheme.panelText }}>Ready next</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full border border-amber-500/50" style={{ backgroundColor: '#0a0e1a', boxShadow: '0 0 6px rgba(245,158,11,0.4)' }} />
-              <span className="text-slate-400">In Progress</span>
+              <span className="w-3 h-3 rounded-full border border-amber-500/50" style={{ backgroundColor: graphTheme.nodeShell, borderColor: `${graphTheme.progressColor}${alphaHex(0.5)}`, boxShadow: edgeGlowMultiplier > 0.03 ? `0 0 6px ${graphTheme.progressColor}${alphaHex(0.4 * edgeGlowMultiplier)}` : 'none' }} />
+              <span className="text-slate-400" style={{ color: graphTheme.panelMuted }}>In Progress</span>
             </div>
             <div className="flex items-center gap-2">
-              <RotateCcw className="w-3.5 h-3.5 text-amber-300" />
-              <span className="text-slate-300">Review due</span>
+              <RotateCcw className="w-3.5 h-3.5 text-amber-300" style={{ color: graphTheme.reviewColor }} />
+              <span className="text-slate-300" style={{ color: graphTheme.panelText }}>Review due</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full border border-emerald-400/50" style={{ backgroundColor: '#0a0e1a', boxShadow: '0 0 8px rgba(52,211,153,0.5)' }} />
-              <span className="text-slate-200">Mastered</span>
+              <span className="w-3 h-3 rounded-full border border-emerald-400/50" style={{ backgroundColor: graphTheme.nodeShell, borderColor: `${graphTheme.masteredColor}${alphaHex(0.5)}`, boxShadow: edgeGlowMultiplier > 0.03 ? `0 0 8px ${graphTheme.masteredColor}${alphaHex(0.5 * edgeGlowMultiplier)}` : 'none' }} />
+              <span className="text-slate-200" style={{ color: graphTheme.panelText }}>Mastered</span>
             </div>
-            <hr className="my-1 border-slate-700/50" />
-            <p className="font-medium text-slate-400 mb-1 tracking-wide uppercase text-[10px]">Structure</p>
+            <hr className="my-1 border-slate-700/50" style={{ borderColor: graphTheme.panelBorder }} />
+            <p className="font-medium text-slate-400 mb-1 tracking-wide uppercase text-[10px]" style={{ color: graphTheme.panelMuted }}>Structure</p>
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-fuchsia-500/70" />
-              <span className="text-slate-400">Root</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-slate-300/70" />
-              <span className="text-slate-400">Subject</span>
+              <span className="w-3 h-3 rounded-full bg-fuchsia-500/70" style={{ backgroundColor: graphTheme.rootAccent }} />
+              <span className="text-slate-400" style={{ color: graphTheme.panelMuted }}>Root</span>
             </div>
             <div className="flex items-center gap-2">
-              <Layers3 className="w-3.5 h-3.5 text-slate-300" />
-              <span className="text-slate-400">Topic</span>
+              <span className="w-3 h-3 rounded-full bg-slate-300/70" style={{ backgroundColor: graphTheme.nodeText }} />
+              <span className="text-slate-400" style={{ color: graphTheme.panelMuted }}>Subject</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-md bg-slate-300/70" />
-              <span className="text-slate-400">Concept</span>
+              <Layers3 className="w-3.5 h-3.5 text-slate-300" style={{ color: graphTheme.nodeText }} />
+              <span className="text-slate-400" style={{ color: graphTheme.panelMuted }}>Topic</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-md bg-slate-300/70" style={{ backgroundColor: graphTheme.nodeText }} />
+              <span className="text-slate-400" style={{ color: graphTheme.panelMuted }}>Concept</span>
             </div>
           </div>
         </div>
@@ -806,14 +910,20 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
         panOnDrag
         selectNodesOnDrag={false}
         proOptions={{ hideAttribution: true }}
-        className="bg-slate-950"
+        className="bg-slate-950 knowledge-graph-surface"
+        style={flowStyle}
       >
-        <SectorBackground sectors={subjectSectors} maxRadius={layoutMaxRadius} opacity={0.04} />
+        <SectorBackground
+          sectors={themedSubjectSectors}
+          maxRadius={layoutMaxRadius}
+          opacity={0.04 * designSettings.backgroundIntensity * graphTheme.sectorBase}
+        />
         <Controls className="bg-slate-900 border border-slate-700/50 rounded-lg shadow-lg [&>button]:bg-slate-800 [&>button]:border-slate-700 [&>button]:text-slate-300 [&>button:hover]:bg-slate-700" />
         <Panel position="bottom-left" style={{ marginLeft: '52px', marginBottom: '10px' }}>
           <button
             onClick={handleResetLayout}
             className="bg-slate-900 border border-slate-700/50 rounded-lg shadow-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+            style={softPanelStyle}
             title="Reset to default layout"
           >
             <LayoutGrid className="w-4 h-4" />
@@ -822,23 +932,28 @@ export function KnowledgeGraph({ onNodeClick, onAddNode, onLinkNodes }: Knowledg
         <MiniMap
           nodeStrokeWidth={3}
           className="border border-slate-700/50 rounded-lg shadow-lg"
-          style={{ backgroundColor: '#0f172a' }}
-          maskColor="rgba(0, 0, 0, 0.4)"
+          style={{ backgroundColor: graphTheme.minimapBg, borderColor: graphTheme.panelBorder }}
+          maskColor={graphTheme.minimapMask}
           nodeColor={(node) => {
-            if (node.id === '__root__') return '#a855f7';
+            if (node.id === '__root__') return graphTheme.rootAccent;
             if (node.id.startsWith('__subject_')) {
               const data = node.data as { color?: string };
-              return data.color || '#6366f1';
+              return resolveGraphAccent(data.color, graphTheme);
             }
             if (node.id.startsWith('__topic_')) {
               const data = node.data as { color?: string };
-              return data.color || '#94a3b8';
+              return resolveGraphAccent(data.color, graphTheme);
             }
             const data = node.data as { subject?: { color: string } };
-            return data.subject?.color || '#60a5fa';
+            return resolveGraphAccent(data.subject?.color, graphTheme);
           }}
         />
-        <Background variant={BackgroundVariant.Dots} gap={32} size={0.8} color="#1e293b80" />
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={32}
+          size={designSettings.backgroundIntensity === 0 ? 0 : Math.max(0.2, 0.8 * designSettings.backgroundIntensity)}
+          color={designSettings.backgroundIntensity === 0 ? 'transparent' : graphTheme.gridColor}
+        />
       </ReactFlow>
     </div>
   );
